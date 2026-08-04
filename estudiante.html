@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TESLAVI · Mis Notas</title>
+  <meta name="description" content="Portal del estudiante — Instituto Tecnológico TESLAVI">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --verde-950: #06231A;
+      --verde-900: #0B3B2A;
+      --verde-800: #0F4F38;
+      --verde-700: #146C46;
+      --verde-600: #1B8557;
+      --verde-100: #E4EFE9;
+      --acero-700: #3E4A4F;
+      --acero-500: #64737A;
+      --acero-200: #C9D2D5;
+      --bg: #F5F7F6;
+      --superficie: #FFFFFF;
+      --texto: #172420;
+      --texto-tenue: #5C6B65;
+      --borde: #DCE4E0;
+      --peligro: #A7291F;
+      --radio: 3px;
+      --radio-superficie: 6px;
+      --sombra-1: 0 1px 2px rgba(6, 35, 26, .06);
+      --sombra-2: 0 12px 32px rgba(6, 35, 26, .14);
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { height: 100%; margin: 0; }
+
+    body {
+      font-family: var(--font-body);
+      color: var(--texto);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background-image:
+        linear-gradient(var(--verde-600) 1px, transparent 1px),
+        linear-gradient(90deg, var(--verde-600) 1px, transparent 1px);
+      background-size: 40px 40px;
+      background-color: var(--bg);
+    }
+    body::before {
+      content: none;
+    }
+
+    .contenedor {
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .marca {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .marca .sello {
+      width: 44px;
+      height: 44px;
+      margin: 0 auto 12px;
+      border-radius: 50%;
+      background: var(--verde-950);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .marca .sello svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .marca h1 {
+      font-family: var(--font-display);
+      font-size: 20px;
+      color: var(--verde-950);
+      margin: 0 0 4px;
+    }
+
+    .marca p {
+      font-size: 13px;
+      color: var(--texto-tenue);
+      margin: 0;
+    }
+
+    .tarjeta {
+      background: var(--superficie);
+      border: 1px solid var(--borde);
+      border-radius: var(--radio-superficie);
+      box-shadow: var(--sombra-2);
+      padding: 32px;
+    }
+
+    .campo { margin-bottom: 16px; }
+
+    .campo label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--acero-700);
+      margin-bottom: 6px;
+    }
+
+    .campo input {
+      width: 100%;
+      padding: 11px 13px;
+      font-family: var(--font-body);
+      font-size: 14.5px;
+      color: var(--texto);
+      background: var(--bg);
+      border: 1px solid var(--borde);
+      border-radius: var(--radio);
+      outline: none;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    .campo input:focus {
+      border-color: var(--verde-950);
+      background: var(--superficie);
+    }
+
+    .campo input:focus-visible {
+      outline: 2px solid var(--verde-600);
+      outline-offset: 2px;
+    }
+
+    .campo .ayuda {
+      font-size: 12px;
+      color: var(--texto-tenue);
+      margin-top: 6px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 13px 16px;
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 14.5px;
+      color: #fff;
+      background: var(--verde-800);
+      border: none;
+      border-radius: var(--radio);
+      cursor: pointer;
+      transition: background .15s ease;
+    }
+
+    .btn:hover:not(:disabled) { background: var(--verde-700); }
+    .btn:disabled { background: var(--acero-200); color: var(--acero-500); cursor: not-allowed; }
+    .btn:focus-visible { outline: 2px solid var(--verde-600); outline-offset: 2px; }
+
+    .btn-secundario {
+      width: 100%;
+      padding: 11px 16px;
+      margin-top: 10px;
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--verde-950);
+      background: var(--superficie);
+      border: 1px solid var(--borde);
+      border-radius: var(--radio);
+      cursor: pointer;
+    }
+    .btn-secundario:hover { background: var(--bg); }
+
+    .mensaje-error {
+      display: none;
+      background: #FBEAE9;
+      color: var(--peligro);
+      border: 1px solid rgba(167, 41, 31, .2);
+      border-radius: var(--radio);
+      padding: 10px 12px;
+      font-size: 13.5px;
+      margin-bottom: 16px;
+    }
+
+    .mensaje-exito {
+      display: none;
+      background: var(--verde-100);
+      color: var(--verde-800);
+      border: 1px solid rgba(15, 79, 56, .2);
+      border-radius: var(--radio);
+      padding: 10px 12px;
+      font-size: 13.5px;
+      margin-bottom: 16px;
+    }
+
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 255, 255, .4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 8px;
+      animation: girar .7s linear infinite;
+    }
+
+    @keyframes girar { to { transform: rotate(360deg); } }
+
+    /* ---- Vista bloqueada por saldo ---- */
+    .bloqueo-icono {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #FBEAE9;
+      color: var(--peligro);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 24px;
+    }
+
+    .bloqueo-titulo {
+      font-family: var(--font-display);
+      font-size: 18px;
+      color: var(--verde-950);
+      text-align: center;
+      margin: 0 0 8px;
+    }
+
+    .bloqueo-texto {
+      font-size: 14px;
+      color: var(--texto-tenue);
+      text-align: center;
+      line-height: 1.6;
+      margin: 0 0 4px;
+    }
+
+    /* ---- Vista de notas ---- */
+    .notas-header {
+      margin-bottom: 20px;
+    }
+
+    .notas-header h2 {
+      font-family: var(--font-display);
+      font-size: 18px;
+      color: var(--verde-950);
+      margin: 0 0 4px;
+    }
+
+    .notas-header p {
+      font-size: 13px;
+      color: var(--texto-tenue);
+      margin: 0;
+    }
+
+    .badge-al-dia {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--verde-100);
+      color: var(--verde-800);
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    table.tabla-notas {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+
+    .tabla-notas th, .tabla-notas td {
+      padding: 10px 8px;
+      text-align: left;
+      border-bottom: 1px solid var(--borde);
+      font-size: 13.5px;
+    }
+
+    .tabla-notas th {
+      background: var(--bg);
+      color: var(--acero-700);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .tabla-notas tr:last-child td { border-bottom: none; }
+
+    .pill {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 100px;
+      font-size: 11.5px;
+      font-weight: 600;
+    }
+
+    .pill-arrastre {
+      background: var(--verde-100);
+      color: var(--verde-800);
+      margin-left: 6px;
+      font-size: 10px;
+    }
+
+    .promedio-final {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 2px solid var(--verde-950);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .promedio-final .etiqueta {
+      font-size: 13px;
+      color: var(--texto-tenue);
+      font-weight: 500;
+    }
+
+    .promedio-final .valor {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--verde-950);
+    }
+
+    .oculto { display: none !important; }
+
+    /* ---- Cambiar contraseña ---- */
+    .enlace-clave {
+      display: block;
+      width: 100%;
+      background: none;
+      border: none;
+      color: var(--acero-500);
+      font-size: 12.5px;
+      text-decoration: underline;
+      cursor: pointer;
+      text-align: center;
+      margin-top: 14px;
+      padding: 4px;
+      font-family: var(--font-body);
+    }
+    .enlace-clave:hover { color: var(--verde-800); }
+
+    .panel-clave {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--borde);
+    }
+
+    .panel-clave h3 {
+      font-size: 13.5px;
+      color: var(--verde-950);
+      margin: 0 0 12px;
+    }
+
+    .pie-nota {
+      text-align: center;
+      font-size: 12px;
+      color: var(--texto-tenue);
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="contenedor">
+    <div class="marca">
+      <div class="sello">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#EAF3EE" stroke-width="1.4">
+          <path d="M12 2 L21 6.5 V17.5 L12 22 L3 17.5 V6.5 Z" />
+          <path d="M12 22 V12" />
+          <path d="M3 6.5 L12 12 L21 6.5" />
+        </svg>
+      </div>
+      <h1>TESLAVI</h1>
+      <p>Portal del Estudiante — Mis Notas</p>
+    </div>
+
+    <div class="tarjeta">
+
+      <!-- VISTA: LOGIN -->
+      <div id="vistaLoginEst">
+        <div class="mensaje-error" id="mensajeError" role="alert"></div>
+        <form id="formLoginEstudiante" novalidate>
+          <div class="campo">
+            <label for="ciInput">Carnet de identidad</label>
+            <input type="text" id="ciInput" inputmode="numeric" autocomplete="username" required placeholder="Ej. 10695420">
+          </div>
+          <div class="campo">
+            <label for="passInput">Contraseña</label>
+            <input type="password" id="passInput" autocomplete="current-password" required placeholder="Tu carnet + teslavi">
+            <div class="ayuda">Tu contraseña es tu carnet seguido de "teslavi". Ejemplo: si tu carnet es 10695420, tu contraseña es <strong>10695420teslavi</strong>.</div>
+          </div>
+          <button type="submit" class="btn" id="btnEntrar">
+            <span class="spinner oculto" id="spinnerLogin"></span>
+            <span id="txtBtnEntrar">Ver mis notas</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- VISTA: BLOQUEADO POR SALDO -->
+      <div id="vistaBloqueoEst" class="oculto">
+        <div class="bloqueo-icono">⚠️</div>
+        <h2 class="bloqueo-titulo">No podés ver tus notas todavía</h2>
+        <p class="bloqueo-texto" id="bloqueoNombreEst"></p>
+        <p class="bloqueo-texto"><strong>Regularizá tus pagos y pasá por Administración</strong> para ponerte al día y volver a consultar tus notas.</p>
+        <button type="button" class="btn-secundario" onclick="window.cerrarSesionEstudiante()">Volver</button>
+      </div>
+
+      <!-- ZONA: CAMBIAR CONTRASEÑA — visible después de iniciar sesión,
+           tanto si puede ver notas como si está bloqueado por saldo. -->
+      <div id="zonaClaveEst" class="oculto">
+        <button type="button" class="enlace-clave" onclick="window.toggleFormClave()">🔑 Cambiar mi contraseña</button>
+        <div id="panelClaveEst" class="panel-clave oculto">
+          <h3>Nueva contraseña</h3>
+          <div class="mensaje-error" id="mensajeErrorClave" role="alert"></div>
+          <div class="mensaje-exito" id="mensajeExitoClave"></div>
+          <div class="campo">
+            <label for="claveNueva1">Nueva contraseña</label>
+            <input type="password" id="claveNueva1" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
+          </div>
+          <div class="campo">
+            <label for="claveNueva2">Repetir nueva contraseña</label>
+            <input type="password" id="claveNueva2" autocomplete="new-password">
+          </div>
+          <button type="button" class="btn" id="btnGuardarClave" onclick="window.guardarNuevaClave()">Guardar nueva contraseña</button>
+        </div>
+      </div>
+
+      <!-- VISTA: NOTAS -->
+      <div id="vistaNotasEst" class="oculto">
+        <div class="notas-header">
+          <h2 id="notasNombreEst">—</h2>
+          <p id="notasDatosEst">—</p>
+          <span class="badge-al-dia">✓ Al día con tus pagos</span>
+        </div>
+        <table class="tabla-notas">
+          <thead>
+            <tr>
+              <th>Materia</th>
+              <th style="text-align:center;">Nota</th>
+              <th style="text-align:center;">Estado</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyNotasEst"></tbody>
+        </table>
+        <div class="promedio-final">
+          <span class="etiqueta">Promedio final</span>
+          <span class="valor" id="promedioFinalEst">—</span>
+        </div>
+        <button type="button" class="btn-secundario" onclick="window.cerrarSesionEstudiante()">Cerrar sesión</button>
+      </div>
+
+    </div>
+
+    <p class="pie-nota">¿Problemas para entrar? Comunicate con Administración del instituto.</p>
+  </div>
+
+  <script>
+    /* ============================================================
+       Mismas credenciales públicas (anon key) que usa index.html —
+       es seguro tenerlas visibles en el navegador, están pensadas
+       para eso; el acceso real lo controlan las políticas RLS en
+       Supabase, no esta clave.
+       ============================================================ */
+    const SUPABASE_URL = "https://uiehqupijamcjptasqfl.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_aG68lfRUBKhEsYIHKf2t1w_zS8VgyzP";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    /* Mismo plan de estudios que usa Libretas/Centralizador en index.html.
+       Está duplicado a propósito: esta página es un archivo independiente,
+       sin build ni módulos compartidos. Si se agregan materias nuevas ahí,
+       hay que copiarlas acá también. */
+    const planEstudios = [
+      { semestre: "Primer Semestre", materias: [
+        { codigo: "MOG 100", nombre: "Motores a Gasolina I" },
+        { codigo: "MAA 100", nombre: "Matemática Automotriz" },
+        { codigo: "ELA 100", nombre: "Electricidad Automotriz I" },
+        { codigo: "SOM 100", nombre: "Seguridad Ocupacional y Medio Ambiente" },
+        { codigo: "MEA 100", nombre: "Metrología Automotriz" },
+        { codigo: "DTA 100", nombre: "Dibujo Técnico Automotriz I" },
+        { codigo: "QUA 100", nombre: "Química Automotriz" }
+      ]},
+      { semestre: "Segundo Semestre", materias: [
+        { codigo: "INT 200", nombre: "Inglés Técnico" },
+        { codigo: "CHS 200", nombre: "Chapería y Soldadura" },
+        { codigo: "ELA 200", nombre: "Electricidad Automotriz II" },
+        { codigo: "MOG 200", nombre: "Motores a Gasolina II" },
+        { codigo: "DTA 200", nombre: "Dibujo Técnico Automotriz II" },
+        { codigo: "FIS 200", nombre: "Física Automotriz" }
+      ]},
+      { semestre: "Tercer Semestre", materias: [
+        { codigo: "TRA 300", nombre: "Transmisiones I" },
+        { codigo: "MOD 300", nombre: "Motores Diesel I" },
+        { codigo: "ELA 300", nombre: "Electricidad Automotriz III" },
+        { codigo: "MOG 300", nombre: "Motores a Gasolina III" },
+        { codigo: "TER 300", nombre: "Termodinámica" },
+        { codigo: "ETA 300", nombre: "Electrónica Automotriz I" }
+      ]},
+      { semestre: "Cuarto Semestre", materias: [
+        { codigo: "MOD 400", nombre: "Motores Diesel II" },
+        { codigo: "TRA 400", nombre: "Transmisiones II" },
+        { codigo: "MOG 400", nombre: "Motores a Gasolina IV" },
+        { codigo: "ETA 400", nombre: "Electrónica Automotriz II" },
+        { codigo: "EMP 400", nombre: "Emprendimiento Productivo" },
+        { codigo: "IAG 400", nombre: "Inyección a Gasolina I" }
+      ]},
+      { semestre: "Quinto Semestre", materias: [
+        { codigo: "IAG 500", nombre: "Inyección a Gasolina II" },
+        { codigo: "TRA 500", nombre: "Transmisiones III" },
+        { codigo: "TMG 500", nombre: "Taller de Modalidad de Graduación I" },
+        { codigo: "LAD 500", nombre: "Laboratorio Diesel I" },
+        { codigo: "ETA 500", nombre: "Electrónica Automotriz III" },
+        { codigo: "IED 500", nombre: "Inyección Electrónica Diesel I" },
+        { codigo: "NEU 500", nombre: "Neumática" }
+      ]},
+      { semestre: "Sexto Semestre", materias: [
+        { codigo: "HID 600", nombre: "Hidráulica" },
+        { codigo: "DAU 600", nombre: "Diagnóstico del Automóvil" },
+        { codigo: "IED 600", nombre: "Inyección Electrónica Diesel II" },
+        { codigo: "TRA 600", nombre: "Transmisiones IV" },
+        { codigo: "TMG 600", nombre: "Taller de Modalidad de Graduación II" },
+        { codigo: "LAD 600", nombre: "Laboratorio Diesel II" },
+        { codigo: "IAG 600", nombre: "Inyección a Gasolina III" },
+        { codigo: "MAP 600", nombre: "Maquinaria Agrícola y Pesada" }
+      ]}
+    ];
+
+    function mostrarVista(id) {
+      ['vistaLoginEst', 'vistaBloqueoEst', 'vistaNotasEst'].forEach(v => {
+        document.getElementById(v).classList.toggle('oculto', v !== id);
+      });
+    }
+
+    function mostrarError(texto) {
+      const msg = document.getElementById('mensajeError');
+      msg.textContent = texto;
+      msg.style.display = 'block';
+    }
+
+    function ocultarError() {
+      document.getElementById('mensajeError').style.display = 'none';
+    }
+
+    window.cerrarSesionEstudiante = function () {
+      window.estudianteSesionActual = null;
+      document.getElementById('formLoginEstudiante').reset();
+      document.getElementById('zonaClaveEst').classList.add('oculto');
+      document.getElementById('panelClaveEst').classList.add('oculto');
+      document.getElementById('claveNueva1').value = '';
+      document.getElementById('claveNueva2').value = '';
+      ocultarMensajesClave();
+      ocultarError();
+      mostrarVista('vistaLoginEst');
+    };
+
+    function ocultarMensajesClave() {
+      document.getElementById('mensajeErrorClave').style.display = 'none';
+      document.getElementById('mensajeExitoClave').style.display = 'none';
+    }
+
+    window.toggleFormClave = function () {
+      document.getElementById('panelClaveEst').classList.toggle('oculto');
+    };
+
+    window.guardarNuevaClave = async function () {
+      ocultarMensajesClave();
+      const errBox = document.getElementById('mensajeErrorClave');
+      const okBox = document.getElementById('mensajeExitoClave');
+      const nueva1 = document.getElementById('claveNueva1').value;
+      const nueva2 = document.getElementById('claveNueva2').value;
+
+      if (!nueva1 || nueva1.length < 6) {
+        errBox.textContent = 'La contraseña nueva tiene que tener al menos 6 caracteres.';
+        errBox.style.display = 'block';
+        return;
+      }
+      if (nueva1 !== nueva2) {
+        errBox.textContent = 'Las dos contraseñas no coinciden.';
+        errBox.style.display = 'block';
+        return;
+      }
+      if (!window.estudianteSesionActual) return;
+
+      const btn = document.getElementById('btnGuardarClave');
+      btn.disabled = true;
+      try {
+        const { error } = await supabaseClient
+          .from('estudiantes')
+          .update({ password_custom: nueva1 })
+          .eq('id', window.estudianteSesionActual.id);
+        if (error) throw error;
+
+        window.estudianteSesionActual.password_custom = nueva1;
+        document.getElementById('claveNueva1').value = '';
+        document.getElementById('claveNueva2').value = '';
+        okBox.textContent = 'Contraseña actualizada. La próxima vez usá esta nueva.';
+        okBox.style.display = 'block';
+      } catch (err) {
+        console.error(err);
+        errBox.textContent = 'No se pudo guardar la nueva contraseña. Intentá de nuevo.';
+        errBox.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    document.getElementById('formLoginEstudiante').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      ocultarError();
+
+      const ci = document.getElementById('ciInput').value.trim();
+      const pass = document.getElementById('passInput').value.trim();
+      if (!ci || !pass) return;
+
+      const btn = document.getElementById('btnEntrar');
+      const spinner = document.getElementById('spinnerLogin');
+      const txt = document.getElementById('txtBtnEntrar');
+      btn.disabled = true;
+      spinner.classList.remove('oculto');
+      txt.textContent = 'Verificando...';
+
+      try {
+        const { data: est, error } = await supabaseClient
+          .from('estudiantes')
+          .select('id, nombres, apellidos, ci, semestre, turno, calificaciones, materias_arrastre, estado_financiero, password_custom')
+          .eq('ci', ci)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        if (!est) {
+          mostrarError('No encontramos ese número de carnet. Verificá el dato o pasa por Administración.');
+          return;
+        }
+
+        const tieneClavePropia = est.password_custom && est.password_custom.trim().length > 0;
+        const passValida = tieneClavePropia
+          ? pass === est.password_custom
+          : pass.toLowerCase() === (String(est.ci).trim() + 'teslavi').toLowerCase();
+
+        if (!passValida) {
+          mostrarError(tieneClavePropia
+            ? 'Contraseña incorrecta.'
+            : 'Contraseña incorrecta. Tu contraseña es tu carnet seguido de "teslavi" (ejemplo: 12345678teslavi).');
+          return;
+        }
+
+        window.estudianteSesionActual = est;
+        document.getElementById('zonaClaveEst').classList.remove('oculto');
+
+        if (est.estado_financiero !== 'AL_DIA') {
+          document.getElementById('bloqueoNombreEst').textContent = `${est.apellidos} ${est.nombres} — CI: ${est.ci}`;
+          mostrarVista('vistaBloqueoEst');
+        } else {
+          renderizarNotas(est);
+          mostrarVista('vistaNotasEst');
+        }
+      } catch (err) {
+        console.error(err);
+        mostrarError('No se pudo verificar tus datos. Intentá de nuevo en un momento.');
+      } finally {
+        btn.disabled = false;
+        spinner.classList.add('oculto');
+        txt.textContent = 'Ver mis notas';
+      }
+    });
+
+    function renderizarNotas(est) {
+      document.getElementById('notasNombreEst').textContent = `${est.apellidos} ${est.nombres}`;
+      document.getElementById('notasDatosEst').textContent = `CI: ${est.ci} · ${est.semestre}° Semestre · Turno ${est.turno}`;
+
+      const planSem = planEstudios[parseInt(est.semestre) - 1];
+      let materiasMostrar = planSem ? [...planSem.materias] : [];
+
+      if (est.materias_arrastre) {
+        const codigosArrastre = est.materias_arrastre.split('|').filter(c => c.trim().length > 0);
+        const todasLasMaterias = planEstudios.flatMap(sem => sem.materias);
+        codigosArrastre.forEach(cod => {
+          const mat = todasLasMaterias.find(m => m.codigo === cod);
+          if (mat) materiasMostrar.push({ ...mat, isArrastre: true });
+        });
+      }
+
+      let notasObj = {};
+      try {
+        if (est.calificaciones) {
+          notasObj = typeof est.calificaciones === 'string' ? JSON.parse(est.calificaciones) : est.calificaciones;
+        }
+      } catch (e) {}
+
+      let sumProm = 0;
+      let countMaterias = 0;
+
+      const tbody = document.getElementById('tbodyNotasEst');
+      tbody.innerHTML = materiasMostrar.map(mat => {
+        const nota = notasObj[mat.codigo] || { teoria: 0, practica: 0 };
+        const final = (Number(nota.teoria) || 0) + (Number(nota.practica) || 0);
+        const sinEval = final === 0 && !nota.teoria && !nota.practica;
+
+        if (!sinEval) { sumProm += final; countMaterias++; }
+
+        const notaStr = sinEval ? '—' : final;
+        const estadoStr = sinEval ? 'Sin evaluar' : (final >= 61 ? 'Aprobado' : 'Reprobado');
+        const bg = sinEval ? 'var(--bg)' : (final >= 61 ? 'var(--verde-100)' : '#FBEAE9');
+        const color = sinEval ? 'var(--texto-tenue)' : (final >= 61 ? 'var(--verde-800)' : 'var(--peligro)');
+        const badgeArrastre = mat.isArrastre ? '<span class="pill pill-arrastre">Arrastre</span>' : '';
+
+        return `
+          <tr>
+            <td>${mat.nombre}${badgeArrastre}</td>
+            <td style="text-align:center; font-family:var(--font-mono); font-weight:600;">${notaStr}</td>
+            <td style="text-align:center;"><span class="pill" style="background:${bg}; color:${color};">${estadoStr}</span></td>
+          </tr>
+        `;
+      }).join('');
+
+      const promedio = countMaterias > 0 ? (sumProm / countMaterias).toFixed(1) : '—';
+      document.getElementById('promedioFinalEst').textContent = promedio;
+    }
+  </script>
+
+</body>
+
+</html>
