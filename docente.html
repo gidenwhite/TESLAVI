@@ -482,6 +482,29 @@
 
     .ui-icon { vertical-align: text-bottom; margin-right: 6px; display: inline-block; }
 
+    .tabs-container {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--borde);
+    }
+    .tab-btn {
+      padding: var(--espacio-3) var(--espacio-5);
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--texto-tenue);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn.active { color: var(--verde-800); border-bottom-color: var(--verde-700); }
+    .tab-btn:hover:not(.active) { color: var(--verde-700); }
+    .vista-tab { display: none; }
+    .vista-tab.activa { display: block; animation: fadeIn 0.3s ease; }
+
     /* CSS para la vista de calificaciones (Estilo Ledger) */
     #seccion-calificar .materia-table th,
     #seccion-calificar .materia-table td {
@@ -703,23 +726,80 @@
                    <button onclick="window.volverMenuDocente()" class="btn-secundario" style="padding:8px 16px; margin-left: 8px;">Volver</button>
                 </div>
             </div>
-            <div class="card list-panel" style="padding:0; margin-top:24px;">
-                <table class="materia-table">
+            <div class="tabs-container" style="margin-top:24px;">
+               <button class="tab-btn active" id="tabBtnCalificarT1" onclick="window.cambiarTabCalificar('tab-calificar-t1', this)">Trimestre 1</button>
+               <button class="tab-btn" onclick="window.cambiarTabCalificar('tab-calificar-t2', this)">Trimestre 2</button>
+               <button class="tab-btn" onclick="window.cambiarTabCalificar('tab-calificar-resumen', this)">Resumen y Recuperatorio</button>
+            </div>
+
+            <div id="tab-calificar-t1" class="vista-tab activa">
+              <div class="card list-panel" style="padding:0;">
+                <div class="tabla-scroll-wrap">
+                <table class="materia-table" style="min-width:760px;">
                    <thead>
                       <tr>
-                         <th style="width:5%">#</th>
-                         <th style="width:30%">Estudiante</th>
-                         <th style="width:15%">Teoría (30)</th>
-                         <th style="width:15%">Práctica (70)</th>
-                         <th style="width:15%">Nota Final</th>
-                         <th style="width:20%">Estado</th>
+                         <th style="width:4%">#</th>
+                         <th style="width:20%">Estudiante</th>
+                         <th style="width:14%">Asistencia (20)</th>
+                         <th style="width:12%">Destreza (20)</th>
+                         <th style="width:12%">Investig. (20)</th>
+                         <th style="width:12%">Prácticas (10)</th>
+                         <th style="width:12%">Examen (30)</th>
+                         <th style="width:14%">Subtotal T1</th>
                       </tr>
                    </thead>
-                   <tbody id="tablaCalificacionesBody"></tbody>
+                   <tbody id="tablaT1Body"></tbody>
                 </table>
-                <div style="padding: var(--espacio-5); text-align:right; border-top: 1px solid var(--borde);">
-                   <button onclick="guardarCalificacionesMasivas()" class="btn-ingresar" style="width:auto; padding: var(--espacio-3) var(--espacio-5); margin:0;" id="btnGuardarNotas">Guardar Notas</button>
                 </div>
+              </div>
+            </div>
+
+            <div id="tab-calificar-t2" class="vista-tab">
+              <div class="card list-panel" style="padding:0;">
+                <div class="tabla-scroll-wrap">
+                <table class="materia-table" style="min-width:760px;">
+                   <thead>
+                      <tr>
+                         <th style="width:4%">#</th>
+                         <th style="width:20%">Estudiante</th>
+                         <th style="width:14%">Asistencia (20)</th>
+                         <th style="width:12%">Destreza (20)</th>
+                         <th style="width:12%">Investig. (20)</th>
+                         <th style="width:12%">Prácticas (10)</th>
+                         <th style="width:12%">Examen (30)</th>
+                         <th style="width:14%">Subtotal T2</th>
+                      </tr>
+                   </thead>
+                   <tbody id="tablaT2Body"></tbody>
+                </table>
+                </div>
+              </div>
+            </div>
+
+            <div id="tab-calificar-resumen" class="vista-tab">
+              <div class="card list-panel" style="padding:0;">
+                <div class="tabla-scroll-wrap">
+                <table class="materia-table" style="min-width:760px;">
+                   <thead>
+                      <tr>
+                         <th style="width:4%">#</th>
+                         <th style="width:22%">Estudiante</th>
+                         <th style="width:11%">Nota T1</th>
+                         <th style="width:11%">Nota T2</th>
+                         <th style="width:14%">Nota Semestral</th>
+                         <th style="width:14%">Recuperatorio</th>
+                         <th style="width:12%">Nota Final</th>
+                         <th style="width:12%">Estado</th>
+                      </tr>
+                   </thead>
+                   <tbody id="tablaResumenBody"></tbody>
+                </table>
+                </div>
+              </div>
+            </div>
+
+            <div style="padding: var(--espacio-5) 0; text-align:right;">
+               <button onclick="guardarCalificacionesMasivas()" class="btn-ingresar" style="width:auto; padding: var(--espacio-3) var(--espacio-5); margin:0;" id="btnGuardarNotas">Guardar Notas</button>
             </div>
           </div>
 
@@ -904,8 +984,16 @@
       document.getElementById("labelNombreDocente").textContent = window.usuarioLogueado.nombre_completo;
       document.getElementById("labelRol").textContent = "Docente";
       window.cargarMisMaterias();
+      window.cargarConfigTrimestres();
       window.registrarAuditoria("Inició sesión en el portal docente", "Autenticación");
     }
+
+    /* Fechas de Trimestre 1 / Trimestre 2 (config global, la define Admin).
+       Se usan para calcular sola la asistencia de cada materia. */
+    window.cargarConfigTrimestres = async function () {
+      const { data } = await supabaseClient.from('config_trimestres').select('*').eq('id', 1).maybeSingle();
+      window.cfgTrimestres = data || { t1_inicio: null, t1_fin: null, t2_inicio: null, t2_fin: null };
+    };
 
     document.getElementById("btnSalir").addEventListener("click", function () {
       window.usuarioLogueado = null;
@@ -987,6 +1075,71 @@
       ]}
     ];
 
+    /* ============================================================
+       MOTOR DE CALIFICACIÓN — Trimestres + Recuperatorio
+       (duplicado a propósito en docente.html / index.html / estudiante.html,
+       mismo criterio que planEstudios: no hay build ni módulos compartidos)
+       ============================================================ */
+    function obtenerNotaObj(est, codigo) {
+      let calObj = {};
+      try { if (est.calificaciones) calObj = typeof est.calificaciones === 'string' ? JSON.parse(est.calificaciones) : est.calificaciones; } catch (e) { }
+      const n = calObj[codigo] || {};
+      return {
+        t1: { destreza: Number(n.t1?.destreza) || 0, investigacion: Number(n.t1?.investigacion) || 0, practicas: Number(n.t1?.practicas) || 0, examen: Number(n.t1?.examen) || 0 },
+        t2: { destreza: Number(n.t2?.destreza) || 0, investigacion: Number(n.t2?.investigacion) || 0, practicas: Number(n.t2?.practicas) || 0, examen: Number(n.t2?.examen) || 0 },
+        recuperatorio: (n.recuperatorio === undefined) ? null : n.recuperatorio
+      };
+    }
+    function obtenerAsistObjMateria(est, codigo) {
+      let asistObj = {};
+      try { if (est.asistencias) asistObj = typeof est.asistencias === 'string' ? JSON.parse(est.asistencias) : est.asistencias; } catch (e) { }
+      return asistObj[codigo] || {};
+    }
+    function ptsAsistenciaTrimestre(asistObjMateria, fechaInicio, fechaFin) {
+      if (!fechaInicio || !fechaFin) return { pts: 0, presentes: 0, total: 0 };
+      let total = 0, presentes = 0;
+      Object.keys(asistObjMateria || {}).forEach(fecha => {
+        if (fecha >= fechaInicio && fecha <= fechaFin) {
+          total++;
+          if (asistObjMateria[fecha].estado === 'Presente') presentes++; // Falta y Falta Justificada NO suman
+        }
+      });
+      return { pts: total > 0 ? Math.round((presentes / total) * 20) : 0, presentes, total };
+    }
+    function subtotalTrimestre(t, ptsAsistencia) {
+      return ptsAsistencia + (Number(t?.destreza) || 0) + (Number(t?.investigacion) || 0) + (Number(t?.practicas) || 0) + (Number(t?.examen) || 0);
+    }
+    function calcularNotaMateria(est, codigo, cfgTrimestres) {
+      const n = obtenerNotaObj(est, codigo);
+      const asistObjMateria = obtenerAsistObjMateria(est, codigo);
+      const cfg = cfgTrimestres || {};
+      const a1 = ptsAsistenciaTrimestre(asistObjMateria, cfg.t1_inicio, cfg.t1_fin);
+      const a2 = ptsAsistenciaTrimestre(asistObjMateria, cfg.t2_inicio, cfg.t2_fin);
+      const t1total = subtotalTrimestre(n.t1, a1.pts);
+      const t2total = subtotalTrimestre(n.t2, a2.pts);
+      const semestral = (t1total * 0.70) + (t2total * 0.30);
+      const habilitaRecuperatorio = semestral >= 42 && semestral < 61;
+      const rec = n.recuperatorio;
+      const notaFinal = (rec === null || rec === undefined || rec === '') ? semestral : (Number(rec) >= 61 ? 61 : Number(rec));
+      const sinEvaluar = t1total === 0 && t2total === 0;
+      return { n, a1, a2, t1total, t2total, semestral, habilitaRecuperatorio, notaFinal, aprobado: notaFinal >= 61, sinEvaluar };
+    }
+    function fmtNum(n) { return Number.isInteger(n) ? String(n) : n.toFixed(1); }
+    function estadoBadgeHtml(sinEvaluar, aprobado) {
+      if (sinEvaluar) return `<span style="color:var(--texto-tenue); font-size:13px;">Sin evaluar</span>`;
+      return aprobado
+        ? `<span class="materia-badge" style="background: rgba(20,108,70,0.1); color: var(--verde-900);">Aprobado</span>`
+        : `<span class="materia-badge" style="background: rgba(211,47,47,0.1); color: #D32F2F;">Reprobado</span>`;
+    }
+
+    window.cambiarTabCalificar = function (idVista, btnActivo) {
+      document.querySelectorAll('#seccion-calificar .vista-tab').forEach(v => v.classList.remove('activa'));
+      document.getElementById(idVista).classList.add('activa');
+      const botones = btnActivo.parentElement.querySelectorAll('.tab-btn');
+      botones.forEach(b => b.classList.remove('active'));
+      btnActivo.classList.add('active');
+    };
+
     window.volverMenuDocente = function() {
       document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activa'));
       document.getElementById('seccion-mis-materias').classList.add('activa');
@@ -1048,7 +1201,7 @@
     };
 
     // ==========================================================
-    // CALIFICACIONES — Teoría (30) + Práctica (70) = Nota Final (100)
+    // CALIFICACIONES — Trimestre 1 + Trimestre 2 + Recuperatorio
     // ==========================================================
     window.estudiantesCalificacionCache = [];
     window.materiaCalificacionActual = null;
@@ -1061,17 +1214,26 @@
 
       window.materiaCalificacionActual = codigo;
 
-      const tbody = document.getElementById('tablaCalificacionesBody');
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--texto-tenue); padding: 32px 0;">Cargando estudiantes...</td></tr>';
+      document.querySelectorAll('#seccion-calificar .vista-tab').forEach(v => v.classList.remove('activa'));
+      document.getElementById('tab-calificar-t1').classList.add('activa');
+      document.querySelectorAll('#seccion-calificar .tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('tabBtnCalificarT1').classList.add('active');
+
+      const cargando = '<tr><td colspan="8" style="text-align: center; color: var(--texto-tenue); padding: 32px 0;">Cargando estudiantes...</td></tr>';
+      ['tablaT1Body', 'tablaT2Body', 'tablaResumenBody'].forEach(id => document.getElementById(id).innerHTML = cargando);
+
+      if (!window.cfgTrimestres) await window.cargarConfigTrimestres();
 
       const { data, error } = await supabaseClient.from("estudiantes").select("*").eq("turno", turno).or(`semestre.eq.${semestreId},materias_arrastre.ilike.%|${codigo}|%`).order("apellidos", { ascending: true });
 
       if (error) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--peligro); padding: 32px 0;">Error al cargar estudiantes.</td></tr>';
+        const err = '<tr><td colspan="8" style="text-align: center; color: var(--peligro); padding: 32px 0;">Error al cargar estudiantes.</td></tr>';
+        ['tablaT1Body', 'tablaT2Body', 'tablaResumenBody'].forEach(id => document.getElementById(id).innerHTML = err);
         return;
       }
       if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--texto-tenue); padding: 32px 0;">No hay estudiantes registrados en este curso.</td></tr>';
+        const vacio = '<tr><td colspan="8" style="text-align: center; color: var(--texto-tenue); padding: 32px 0;">No hay estudiantes registrados en este curso.</td></tr>';
+        ['tablaT1Body', 'tablaT2Body', 'tablaResumenBody'].forEach(id => document.getElementById(id).innerHTML = vacio);
         return;
       }
 
@@ -1080,62 +1242,103 @@
     };
 
     window.renderizarTablaCalificaciones = function () {
-      const tbody = document.getElementById('tablaCalificacionesBody');
-      let html = "";
+      const codigo = window.materiaCalificacionActual;
+      let htmlT1 = "", htmlT2 = "", htmlResumen = "";
       let index = 1;
 
       window.estudiantesCalificacionCache.forEach(est => {
-        let notasObj = {};
-        try {
-          if (est.calificaciones) {
-            notasObj = typeof est.calificaciones === 'string' ? JSON.parse(est.calificaciones) : est.calificaciones;
-          }
-        } catch (e) { }
+        const r = calcularNotaMateria(est, codigo, window.cfgTrimestres);
+        const nombreCorto = `${est.apellidos} <span style="font-weight:400;">${est.nombres}</span>`;
 
-        const nota = notasObj[window.materiaCalificacionActual] || { teoria: 0, practica: 0 };
-        const final = (Number(nota.teoria) || 0) + (Number(nota.practica) || 0);
-
-        let estadoHtml = final >= 61
-          ? `<span class="materia-badge" style="background: rgba(20,108,70,0.1); color: var(--verde-900);"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Aprobado</span>`
-          : `<span class="materia-badge" style="background: rgba(211,47,47,0.1); color: #D32F2F;"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Reprobado</span>`;
-        if (final === 0) estadoHtml = `<span style="color:var(--texto-tenue); font-size:13px;">Sin evaluar</span>`;
-
-        html += `
-          <tr>
+        const filaTrimestre = (n, a, tipoPrefijo, subtotal) => `
+          <tr data-id="${est.id}">
              <td style="color:var(--texto-tenue);">${index}</td>
-             <td style="font-weight:600; color:var(--verde-950); font-size:14px;">${est.apellidos} <span style="font-weight:400;">${est.nombres}</span></td>
-             <td><input type="number" min="0" max="30" class="select-css nota-input" style="width:70px; text-align:right; padding: 4px 8px; font-family: var(--font-mono); height: 32px;" data-id="${est.id}" data-tipo="teoria" value="${nota.teoria}" onchange="window.recalcularFila(this)"></td>
-             <td><input type="number" min="0" max="70" class="select-css nota-input" style="width:70px; text-align:right; padding: 4px 8px; font-family: var(--font-mono); height: 32px;" data-id="${est.id}" data-tipo="practica" value="${nota.practica}" onchange="window.recalcularFila(this)"></td>
-             <td style="font-weight:bold; font-size:15px; color: ${final >= 61 ? 'var(--verde-950)' : '#D32F2F'};" class="nota-final-text">${final}</td>
-             <td class="nota-estado-text">${estadoHtml}</td>
-          </tr>
-          `;
+             <td style="font-weight:600; color:var(--verde-950); font-size:13.5px;">${nombreCorto}</td>
+             <td style="text-align:center; font-size:12.5px; color:var(--texto-tenue);" title="${a.presentes} presente(s) de ${a.total} registrado(s) en el rango del trimestre">${a.pts} pts <span style="opacity:.7;">(${a.presentes}/${a.total})</span></td>
+             <td><input type="number" min="0" max="20" class="select-css nota-input" style="width:60px; text-align:right; padding:4px 6px;" data-tipo="${tipoPrefijo}_destreza" value="${n.destreza}" onchange="window.recalcularFila(this)"></td>
+             <td><input type="number" min="0" max="20" class="select-css nota-input" style="width:60px; text-align:right; padding:4px 6px;" data-tipo="${tipoPrefijo}_investigacion" value="${n.investigacion}" onchange="window.recalcularFila(this)"></td>
+             <td><input type="number" min="0" max="10" class="select-css nota-input" style="width:60px; text-align:right; padding:4px 6px;" data-tipo="${tipoPrefijo}_practicas" value="${n.practicas}" onchange="window.recalcularFila(this)"></td>
+             <td><input type="number" min="0" max="30" class="select-css nota-input" style="width:60px; text-align:right; padding:4px 6px;" data-tipo="${tipoPrefijo}_examen" value="${n.examen}" onchange="window.recalcularFila(this)"></td>
+             <td class="subtotal-text" style="font-weight:bold;">${fmtNum(subtotal)}</td>
+          </tr>`;
+
+        htmlT1 += filaTrimestre(r.n.t1, r.a1, 't1', r.t1total);
+        htmlT2 += filaTrimestre(r.n.t2, r.a2, 't2', r.t2total);
+
+        htmlResumen += `
+          <tr data-id="${est.id}">
+             <td style="color:var(--texto-tenue);">${index}</td>
+             <td style="font-weight:600; color:var(--verde-950); font-size:13.5px;">${nombreCorto}</td>
+             <td class="resumen-t1-text" style="text-align:center;">${fmtNum(r.t1total)}</td>
+             <td class="resumen-t2-text" style="text-align:center;">${fmtNum(r.t2total)}</td>
+             <td class="resumen-semestral-text" style="text-align:center; font-weight:600;">${fmtNum(r.semestral)}</td>
+             <td style="text-align:center;">
+                <input type="number" min="0" max="100" class="select-css rec-input" style="width:70px; text-align:right; padding:4px 6px;" ${r.habilitaRecuperatorio ? '' : 'disabled'} value="${r.habilitaRecuperatorio && r.n.recuperatorio !== null ? r.n.recuperatorio : ''}" placeholder="${r.habilitaRecuperatorio ? '0-100' : '—'}" onchange="window.recalcularEstudiantePorId('${est.id}')">
+             </td>
+             <td class="resumen-final-text" style="text-align:center; font-weight:bold; color: ${r.aprobado ? 'var(--verde-950)' : '#D32F2F'};">${fmtNum(r.notaFinal)}</td>
+             <td class="resumen-estado-text">${estadoBadgeHtml(r.sinEvaluar, r.aprobado)}</td>
+          </tr>`;
         index++;
       });
-      tbody.innerHTML = html;
+
+      document.getElementById('tablaT1Body').innerHTML = htmlT1;
+      document.getElementById('tablaT2Body').innerHTML = htmlT2;
+      document.getElementById('tablaResumenBody').innerHTML = htmlResumen;
     };
 
     window.recalcularFila = function (input) {
-      const tr = input.closest('tr');
-      const inputs = tr.querySelectorAll('.nota-input');
-      let teoria = Number(inputs[0].value) || 0;
-      let practica = Number(inputs[1].value) || 0;
+      let val = Number(input.value) || 0;
+      const max = Number(input.getAttribute('max')) || 0;
+      if (val > max) { val = max; input.value = max; }
+      if (val < 0) { val = 0; input.value = 0; }
+      window.recalcularEstudiantePorId(input.closest('tr').getAttribute('data-id'));
+    };
 
-      if (teoria > 30) { teoria = 30; inputs[0].value = 30; }
-      if (practica > 70) { practica = 70; inputs[1].value = 70; }
-      if (teoria < 0) { teoria = 0; inputs[0].value = 0; }
-      if (practica < 0) { practica = 0; inputs[1].value = 0; }
+    window.recalcularEstudiantePorId = function (estId) {
+      const trT1 = document.querySelector(`#tablaT1Body tr[data-id="${estId}"]`);
+      const trT2 = document.querySelector(`#tablaT2Body tr[data-id="${estId}"]`);
+      const trResumen = document.querySelector(`#tablaResumenBody tr[data-id="${estId}"]`);
+      if (!trT1 || !trT2 || !trResumen) return;
 
-      const final = teoria + practica;
-      tr.querySelector('.nota-final-text').textContent = final;
-      tr.querySelector('.nota-final-text').style.color = final >= 61 ? 'var(--verde-950)' : '#D32F2F';
+      const est = window.estudiantesCalificacionCache.find(e => String(e.id) === String(estId));
+      const asistObjMateria = obtenerAsistObjMateria(est, window.materiaCalificacionActual);
+      const cfg = window.cfgTrimestres || {};
+      const a1 = ptsAsistenciaTrimestre(asistObjMateria, cfg.t1_inicio, cfg.t1_fin);
+      const a2 = ptsAsistenciaTrimestre(asistObjMateria, cfg.t2_inicio, cfg.t2_fin);
 
-      let estadoHtml = final >= 61
-        ? `<span class="materia-badge" style="background: rgba(20,108,70,0.1); color: var(--verde-900);"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Aprobado</span>`
-        : `<span class="materia-badge" style="background: rgba(211,47,47,0.1); color: #D32F2F;"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Reprobado</span>`;
-      if (final === 0) estadoHtml = `<span style="color:var(--texto-tenue); font-size:13px;">Sin evaluar</span>`;
+      const getVal = (tr, tipo) => Number(tr.querySelector(`[data-tipo="${tipo}"]`)?.value) || 0;
+      const t1 = { destreza: getVal(trT1, 't1_destreza'), investigacion: getVal(trT1, 't1_investigacion'), practicas: getVal(trT1, 't1_practicas'), examen: getVal(trT1, 't1_examen') };
+      const t2 = { destreza: getVal(trT2, 't2_destreza'), investigacion: getVal(trT2, 't2_investigacion'), practicas: getVal(trT2, 't2_practicas'), examen: getVal(trT2, 't2_examen') };
 
-      tr.querySelector('.nota-estado-text').innerHTML = estadoHtml;
+      const t1total = subtotalTrimestre(t1, a1.pts);
+      const t2total = subtotalTrimestre(t2, a2.pts);
+      const semestral = (t1total * 0.70) + (t2total * 0.30);
+      const habilita = semestral >= 42 && semestral < 61;
+
+      trT1.querySelector('.subtotal-text').textContent = fmtNum(t1total);
+      trT2.querySelector('.subtotal-text').textContent = fmtNum(t2total);
+      trResumen.querySelector('.resumen-t1-text').textContent = fmtNum(t1total);
+      trResumen.querySelector('.resumen-t2-text').textContent = fmtNum(t2total);
+      trResumen.querySelector('.resumen-semestral-text').textContent = fmtNum(semestral);
+
+      const recInput = trResumen.querySelector('.rec-input');
+      recInput.disabled = !habilita;
+      if (!habilita) {
+        recInput.value = '';
+      } else if (recInput.value !== '') {
+        let v = Number(recInput.value) || 0;
+        if (v > 100) { v = 100; recInput.value = 100; }
+        if (v < 0) { v = 0; recInput.value = 0; }
+      }
+      const recVal = (habilita && recInput.value !== '') ? Number(recInput.value) : null;
+      const notaFinal = (recVal === null) ? semestral : (recVal >= 61 ? 61 : recVal);
+      const aprobado = notaFinal >= 61;
+      const sinEvaluar = t1total === 0 && t2total === 0;
+
+      const finalText = trResumen.querySelector('.resumen-final-text');
+      finalText.textContent = fmtNum(notaFinal);
+      finalText.style.color = aprobado ? 'var(--verde-950)' : '#D32F2F';
+      trResumen.querySelector('.resumen-estado-text').innerHTML = estadoBadgeHtml(sinEvaluar, aprobado);
     };
 
     window.guardarCalificacionesMasivas = async function () {
@@ -1143,30 +1346,32 @@
       btn.textContent = "Guardando...";
       btn.disabled = true;
 
-      const inputs = document.querySelectorAll('.nota-input');
-      const valores = {};
-      inputs.forEach(inp => {
-        const id = inp.getAttribute('data-id');
-        const tipo = inp.getAttribute('data-tipo');
-        if (!valores[id]) valores[id] = {};
-        valores[id][tipo] = Number(inp.value) || 0;
-      });
-
+      const codigo = window.materiaCalificacionActual;
       const updates = [];
-      window.estudiantesCalificacionCache.forEach(est => {
-        let notasObj = {};
-        try { if (est.calificaciones) notasObj = typeof est.calificaciones === 'string' ? JSON.parse(est.calificaciones) : est.calificaciones; } catch (e) { }
 
-        if (valores[est.id]) {
-          notasObj[window.materiaCalificacionActual] = { teoria: valores[est.id].teoria, practica: valores[est.id].practica };
-          updates.push(supabaseClient.from("estudiantes").update({ calificaciones: notasObj }).eq("id", est.id));
-          est.calificaciones = notasObj;
-        }
+      window.estudiantesCalificacionCache.forEach(est => {
+        const trT1 = document.querySelector(`#tablaT1Body tr[data-id="${est.id}"]`);
+        const trT2 = document.querySelector(`#tablaT2Body tr[data-id="${est.id}"]`);
+        const trResumen = document.querySelector(`#tablaResumenBody tr[data-id="${est.id}"]`);
+        if (!trT1 || !trT2 || !trResumen) return;
+
+        const getVal = (tr, tipo) => Number(tr.querySelector(`[data-tipo="${tipo}"]`)?.value) || 0;
+        const t1 = { destreza: getVal(trT1, 't1_destreza'), investigacion: getVal(trT1, 't1_investigacion'), practicas: getVal(trT1, 't1_practicas'), examen: getVal(trT1, 't1_examen') };
+        const t2 = { destreza: getVal(trT2, 't2_destreza'), investigacion: getVal(trT2, 't2_investigacion'), practicas: getVal(trT2, 't2_practicas'), examen: getVal(trT2, 't2_examen') };
+        const recInput = trResumen.querySelector('.rec-input');
+        const recuperatorio = (!recInput.disabled && recInput.value !== '') ? Number(recInput.value) : null;
+
+        let calObj = {};
+        try { if (est.calificaciones) calObj = typeof est.calificaciones === 'string' ? JSON.parse(est.calificaciones) : est.calificaciones; } catch (e) { }
+        calObj[codigo] = { t1, t2, recuperatorio };
+
+        updates.push(supabaseClient.from("estudiantes").update({ calificaciones: calObj }).eq("id", est.id));
+        est.calificaciones = calObj;
       });
 
       try {
         await Promise.all(updates);
-        await window.registrarAuditoria(`Guardó/actualizó calificaciones`, `Materia: ${window.materiaCalificacionActual}`);
+        await window.registrarAuditoria(`Guardó/actualizó calificaciones (T1/T2/Recuperatorio)`, `Materia: ${codigo}`);
         btn.textContent = "¡Notas Guardadas!";
         btn.style.background = "var(--verde-700)";
         setTimeout(() => { btn.textContent = "Guardar Notas"; btn.style.background = ""; btn.disabled = false; }, 2000);
@@ -1177,59 +1382,60 @@
       }
     };
 
+    const CABECERA_NOTAS = ['#', 'Estudiante', 'Asist. T1', 'Destr. T1', 'Invest. T1', 'Práct. T1', 'Exam. T1', 'Subtot. T1', 'Asist. T2', 'Destr. T2', 'Invest. T2', 'Práct. T2', 'Exam. T2', 'Subtot. T2', 'Semestral', 'Recuperat.', 'Nota Final', 'Estado'];
+
+    function filaNotasExport(est, idx, codigo) {
+      const r = calcularNotaMateria(est, codigo, window.cfgTrimestres);
+      const estado = r.sinEvaluar ? 'Sin evaluar' : (r.aprobado ? 'Aprobado' : 'Reprobado');
+      return [
+        idx + 1, `${est.apellidos}, ${est.nombres}`,
+        r.a1.pts, r.n.t1.destreza, r.n.t1.investigacion, r.n.t1.practicas, r.n.t1.examen, fmtNum(r.t1total),
+        r.a2.pts, r.n.t2.destreza, r.n.t2.investigacion, r.n.t2.practicas, r.n.t2.examen, fmtNum(r.t2total),
+        fmtNum(r.semestral), (r.n.recuperatorio === null || r.n.recuperatorio === undefined) ? '—' : r.n.recuperatorio,
+        fmtNum(r.notaFinal), estado
+      ];
+    }
+
     window.exportarExcelNotas = async function () {
       if (!window.estudiantesCalificacionCache || window.estudiantesCalificacionCache.length === 0) return;
       const titulo = document.getElementById('tituloMateriaCalificar').textContent;
       const subtitulo = document.getElementById('subtituloMateriaCalificar').textContent;
       const docente = window.usuarioLogueado?.nombre_completo || "Docente";
       const fecha = new Date().toLocaleDateString('es-ES');
+      const codigo = window.materiaCalificacionActual;
+      const totalCols = CABECERA_NOTAS.length;
 
       const wb = new ExcelJS.Workbook();
       wb.creator = 'Instituto TESLAVI';
       const ws = wb.addWorksheet('Calificaciones');
 
-      ws.columns = [
-        { header: '', key: 'n', width: 5 },
-        { header: '', key: 'estudiante', width: 35 },
-        { header: '', key: 'teoria', width: 12 },
-        { header: '', key: 'practica', width: 12 },
-        { header: '', key: 'final', width: 12 },
-        { header: '', key: 'estado', width: 15 }
-      ];
+      ws.columns = CABECERA_NOTAS.map((_, i) => ({ header: '', key: 'c' + i, width: i === 1 ? 30 : 11 }));
 
-      ws.mergeCells('A1:F1');
-      const tituloCelda = ws.getCell('A1');
+      ws.mergeCells(1, 1, 1, totalCols);
+      const tituloCelda = ws.getCell(1, 1);
       tituloCelda.value = 'INSTITUTO TECNOLÓGICO TESLAVI - SISTEMA ACADÉMICO';
       tituloCelda.font = { name: 'Arial', size: 14, bold: true, color: { argb: 'FFFFFFFF' } };
       tituloCelda.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF06231A' } };
       tituloCelda.alignment = { vertical: 'middle', horizontal: 'center' };
 
-      ws.mergeCells('A2:F2');
-      const subCelda = ws.getCell('A2');
-      subCelda.value = `PLANILLA DE CALIFICACIONES - ${fecha}`;
+      ws.mergeCells(2, 1, 2, totalCols);
+      const subCelda = ws.getCell(2, 1);
+      subCelda.value = `PLANILLA DE CALIFICACIONES POR TRIMESTRE - ${fecha}`;
       subCelda.font = { name: 'Arial', size: 11, bold: true };
       subCelda.alignment = { horizontal: 'center' };
 
-      ws.mergeCells('A3:F3');
-      ws.getCell('A3').value = `Materia: ${titulo} | ${subtitulo} | Docente: ${docente}`;
-      ws.getCell('A3').font = { name: 'Arial', size: 10, italic: true };
+      ws.mergeCells(3, 1, 3, totalCols);
+      ws.getCell(3, 1).value = `Materia: ${titulo} | ${subtitulo} | Docente: ${docente}`;
+      ws.getCell(3, 1).font = { name: 'Arial', size: 10, italic: true };
 
       const headerRow = ws.getRow(5);
-      headerRow.values = ['#', 'Estudiante', 'Teoría (30)', 'Práctica (70)', 'Nota Final', 'Estado'];
+      headerRow.values = CABECERA_NOTAS;
       headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-      headerRow.eachCell(cell => {
-        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF146C46' } };
-      });
+      headerRow.eachCell(cell => { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF146C46' } }; });
 
       let rowIndex = 6;
       window.estudiantesCalificacionCache.forEach((est, idx) => {
-        let notasObj = {};
-        try { if (est.calificaciones) notasObj = typeof est.calificaciones === 'string' ? JSON.parse(est.calificaciones) : est.calificaciones; } catch (e) { }
-        const nota = notasObj[window.materiaCalificacionActual] || { teoria: 0, practica: 0 };
-        const final = (Number(nota.teoria) || 0) + (Number(nota.practica) || 0);
-        const estado = final >= 61 ? 'Aprobado' : (final === 0 ? 'Sin evaluar' : 'Reprobado');
-
-        ws.getRow(rowIndex).values = [idx + 1, `${est.apellidos}, ${est.nombres}`, nota.teoria, nota.practica, final, estado];
+        ws.getRow(rowIndex).values = filaNotasExport(est, idx, codigo);
         rowIndex++;
       });
 
@@ -1237,57 +1443,44 @@
       const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = `Calificaciones_${window.materiaCalificacionActual}.xlsx`;
+      link.download = `Calificaciones_${codigo}.xlsx`;
       link.click();
     };
 
     window.exportarPDFNotas = function () {
       if (!window.estudiantesCalificacionCache || window.estudiantesCalificacionCache.length === 0) return;
       const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
+      const doc = new jsPDF('l', 'pt', 'a4');
       const titulo = document.getElementById('tituloMateriaCalificar').textContent;
       const subtitulo = document.getElementById('subtituloMateriaCalificar').textContent;
       const docente = window.usuarioLogueado?.nombre_completo || "Docente";
       const fecha = new Date().toLocaleDateString('es-ES');
+      const codigo = window.materiaCalificacionActual;
 
-      doc.setFillColor(6, 35, 26);
-      doc.rect(0, 0, 210, 20, 'F');
-
-      doc.setTextColor(255, 255, 255);
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
-      doc.text("INSTITUTO TECNOLOGICO TESLAVI", 105, 12, { align: "center" });
+      doc.text("INSTITUTO TECNOLOGICO TESLAVI", doc.internal.pageSize.getWidth() / 2, 40, { align: "center" });
 
-      doc.setTextColor(11, 59, 42);
-      doc.setFontSize(12);
-      doc.text("PLANILLA DE CALIFICACIONES", 105, 30, { align: "center" });
+      doc.setFontSize(11);
+      doc.text("PLANILLA DE CALIFICACIONES POR TRIMESTRE", doc.internal.pageSize.getWidth() / 2, 58, { align: "center" });
 
-      doc.setFontSize(10);
+      doc.setFontSize(9);
       doc.setFont("helvetica", "normal");
-      doc.text(`Materia: ${titulo}`, 14, 40);
-      doc.text(subtitulo, 14, 45);
-      doc.text(`Docente: ${docente}`, 14, 50);
-      doc.text(`Fecha: ${fecha}`, 160, 40);
+      doc.text(`${titulo} | ${subtitulo} | Docente: ${docente} | Fecha: ${fecha}`, doc.internal.pageSize.getWidth() / 2, 74, { align: "center" });
 
-      const dataTabla = window.estudiantesCalificacionCache.map((est, idx) => {
-        let notasObj = {};
-        try { if (est.calificaciones) notasObj = typeof est.calificaciones === 'string' ? JSON.parse(est.calificaciones) : est.calificaciones; } catch (e) { }
-        const nota = notasObj[window.materiaCalificacionActual] || { teoria: 0, practica: 0 };
-        const final = (Number(nota.teoria) || 0) + (Number(nota.practica) || 0);
-        const estado = final >= 61 ? 'Aprobado' : (final === 0 ? 'Sin evaluar' : 'Reprobado');
-        return [idx + 1, est.apellidos + ", " + est.nombres, nota.teoria, nota.practica, final, estado];
-      });
+      const dataTabla = window.estudiantesCalificacionCache.map((est, idx) => filaNotasExport(est, idx, codigo));
 
       doc.autoTable({
-        startY: 55,
-        head: [['#', 'Estudiante', 'Teoría (30)', 'Práctica (70)', 'Final', 'Estado']],
+        startY: 90,
+        head: [CABECERA_NOTAS],
         body: dataTabla,
-        headStyles: { fillColor: [20, 108, 70], textColor: [255, 255, 255] },
-        styles: { fontSize: 9, cellPadding: 2 },
+        headStyles: { fillColor: [20, 108, 70], textColor: [255, 255, 255], fontSize: 7.5, halign: 'center' },
+        styles: { fontSize: 7.5, cellPadding: 2, halign: 'center' },
+        columnStyles: { 1: { halign: 'left', minCellWidth: 90 } },
         alternateRowStyles: { fillColor: [240, 245, 242] }
       });
 
-      doc.save(`Calificaciones_${window.materiaCalificacionActual}.pdf`);
+      doc.save(`Calificaciones_${codigo}.pdf`);
     };
 
     window.exportarWordNotas = function () {
@@ -1296,27 +1489,24 @@
       const subtitulo = document.getElementById('subtituloMateriaCalificar').textContent;
       const docente = window.usuarioLogueado?.nombre_completo || "Docente";
       const fecha = new Date().toLocaleDateString('es-ES');
+      const codigo = window.materiaCalificacionActual;
 
       let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">';
       html += '<head><meta charset="utf-8"><title>Calificaciones<\/title>';
-      html += '<style>body { font-family: Arial, sans-serif; } table { width: 100%; border-collapse: collapse; margin-top: 15px; } th, td { border: 1px solid #146C46; padding: 6px; text-align: left; font-size: 12px; } th { background-color: #146C46; color: white; } h2 { color: #06231A; text-align: center; font-size: 16px; margin:0; } h3 { color: #146C46; text-align: center; font-size: 14px; margin: 4px 0 16px 0; } p { font-size: 12px; margin: 2px 0; }<\/style>';
+      html += '<style>body { font-family: Arial, sans-serif; } table { width: 100%; border-collapse: collapse; margin-top: 15px; } th, td { border: 1px solid #146C46; padding: 5px; text-align: center; font-size: 10.5px; } td:nth-child(2) { text-align: left; } th { background-color: #146C46; color: white; } h2 { color: #06231A; text-align: center; font-size: 16px; margin:0; } h3 { color: #146C46; text-align: center; font-size: 14px; margin: 4px 0 16px 0; } p { font-size: 12px; margin: 2px 0; }<\/style>';
       html += '<\/head><body>';
       html += '<h2>INSTITUTO TECNOLOGICO TESLAVI<\/h2>';
-      html += '<h3>PLANILLA DE CALIFICACIONES<\/h3>';
+      html += '<h3>PLANILLA DE CALIFICACIONES POR TRIMESTRE<\/h3>';
       html += `<p><strong>Materia:<\/strong> ${titulo}<\/p>`;
       html += `<p><strong>Detalle:<\/strong> ${subtitulo}<\/p>`;
       html += `<p><strong>Docente:<\/strong> ${docente}<\/p>`;
       html += `<p><strong>Fecha de impresión:<\/strong> ${fecha}<\/p>`;
 
-      html += '<table><thead><tr><th>#<\/th><th>Estudiante<\/th><th>Teoría (30)<\/th><th>Práctica (70)<\/th><th>Final<\/th><th>Estado<\/th><\/tr><\/thead><tbody>';
+      html += '<table><thead><tr>' + CABECERA_NOTAS.map(h => `<th>${h}<\/th>`).join('') + '<\/tr><\/thead><tbody>';
 
       window.estudiantesCalificacionCache.forEach((est, idx) => {
-        let notasObj = {};
-        try { if (est.calificaciones) notasObj = typeof est.calificaciones === 'string' ? JSON.parse(est.calificaciones) : est.calificaciones; } catch (e) { }
-        const nota = notasObj[window.materiaCalificacionActual] || { teoria: 0, practica: 0 };
-        const final = (Number(nota.teoria) || 0) + (Number(nota.practica) || 0);
-        const estado = final >= 61 ? 'Aprobado' : (final === 0 ? 'Sin evaluar' : 'Reprobado');
-        html += `<tr><td>${idx + 1}<\/td><td>${est.apellidos}, ${est.nombres}<\/td><td>${nota.teoria}<\/td><td>${nota.practica}<\/td><td>${final}<\/td><td>${estado}<\/td><\/tr>`;
+        const fila = filaNotasExport(est, idx, codigo);
+        html += '<tr>' + fila.map(v => `<td>${v}<\/td>`).join('') + '<\/tr>';
       });
 
       html += '<\/tbody><\/table><\/body><\/html>';
@@ -1326,7 +1516,7 @@
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `Calificaciones_${window.materiaCalificacionActual}.doc`;
+      link.download = `Calificaciones_${codigo}.doc`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

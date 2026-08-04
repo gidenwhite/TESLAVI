@@ -643,7 +643,7 @@
       try {
         const { data: est, error } = await supabaseClient
           .from('estudiantes')
-          .select('id, nombres, apellidos, ci, semestre, turno, calificaciones, materias_arrastre, estado_financiero, password_custom')
+          .select('id, nombres, apellidos, ci, semestre, turno, calificaciones, asistencias, materias_arrastre, estado_financiero, password_custom')
           .eq('ci', ci)
           .maybeSingle();
 
@@ -652,6 +652,11 @@
         if (!est) {
           mostrarError('No encontramos ese número de carnet. Verificá el dato o pasa por Administración.');
           return;
+        }
+
+        if (!window.cfgTrimestres) {
+          const { data: cfg } = await supabaseClient.from('config_trimestres').select('*').eq('id', 1).maybeSingle();
+          window.cfgTrimestres = cfg || { t1_inicio: null, t1_fin: null, t2_inicio: null, t2_fin: null };
         }
 
         const tieneClavePropia = est.password_custom && est.password_custom.trim().length > 0;
@@ -686,6 +691,56 @@
       }
     });
 
+    /* ============================================================
+       MOTOR DE CALIFICACIÓN — Trimestres + Recuperatorio
+       (duplicado a propósito en docente.html / index.html / estudiante.html,
+       mismo criterio que planEstudios: no hay build ni módulos compartidos)
+       ============================================================ */
+    function obtenerNotaObj(est, codigo) {
+      let calObj = {};
+      try { if (est.calificaciones) calObj = typeof est.calificaciones === 'string' ? JSON.parse(est.calificaciones) : est.calificaciones; } catch (e) { }
+      const n = calObj[codigo] || {};
+      return {
+        t1: { destreza: Number(n.t1?.destreza) || 0, investigacion: Number(n.t1?.investigacion) || 0, practicas: Number(n.t1?.practicas) || 0, examen: Number(n.t1?.examen) || 0 },
+        t2: { destreza: Number(n.t2?.destreza) || 0, investigacion: Number(n.t2?.investigacion) || 0, practicas: Number(n.t2?.practicas) || 0, examen: Number(n.t2?.examen) || 0 },
+        recuperatorio: (n.recuperatorio === undefined) ? null : n.recuperatorio
+      };
+    }
+    function obtenerAsistObjMateria(est, codigo) {
+      let asistObj = {};
+      try { if (est.asistencias) asistObj = typeof est.asistencias === 'string' ? JSON.parse(est.asistencias) : est.asistencias; } catch (e) { }
+      return asistObj[codigo] || {};
+    }
+    function ptsAsistenciaTrimestre(asistObjMateria, fechaInicio, fechaFin) {
+      if (!fechaInicio || !fechaFin) return { pts: 0, presentes: 0, total: 0 };
+      let total = 0, presentes = 0;
+      Object.keys(asistObjMateria || {}).forEach(fecha => {
+        if (fecha >= fechaInicio && fecha <= fechaFin) {
+          total++;
+          if (asistObjMateria[fecha].estado === 'Presente') presentes++; // Falta y Falta Justificada NO suman
+        }
+      });
+      return { pts: total > 0 ? Math.round((presentes / total) * 20) : 0, presentes, total };
+    }
+    function subtotalTrimestre(t, ptsAsistencia) {
+      return ptsAsistencia + (Number(t?.destreza) || 0) + (Number(t?.investigacion) || 0) + (Number(t?.practicas) || 0) + (Number(t?.examen) || 0);
+    }
+    function calcularNotaMateria(est, codigo, cfgTrimestres) {
+      const n = obtenerNotaObj(est, codigo);
+      const asistObjMateria = obtenerAsistObjMateria(est, codigo);
+      const cfg = cfgTrimestres || {};
+      const a1 = ptsAsistenciaTrimestre(asistObjMateria, cfg.t1_inicio, cfg.t1_fin);
+      const a2 = ptsAsistenciaTrimestre(asistObjMateria, cfg.t2_inicio, cfg.t2_fin);
+      const t1total = subtotalTrimestre(n.t1, a1.pts);
+      const t2total = subtotalTrimestre(n.t2, a2.pts);
+      const semestral = (t1total * 0.70) + (t2total * 0.30);
+      const rec = n.recuperatorio;
+      const notaFinal = (rec === null || rec === undefined || rec === '') ? semestral : (Number(rec) >= 61 ? 61 : Number(rec));
+      const sinEvaluar = t1total === 0 && t2total === 0;
+      return { n, a1, a2, t1total, t2total, semestral, notaFinal, aprobado: notaFinal >= 61, sinEvaluar };
+    }
+    function fmtNum(n) { return Number.isInteger(n) ? String(n) : n.toFixed(1); }
+
     function renderizarNotas(est) {
       document.getElementById('notasNombreEst').textContent = `${est.apellidos} ${est.nombres}`;
       document.getElementById('notasDatosEst').textContent = `CI: ${est.ci} · ${est.semestre}° Semestre · Turno ${est.turno}`;
@@ -702,28 +757,21 @@
         });
       }
 
-      let notasObj = {};
-      try {
-        if (est.calificaciones) {
-          notasObj = typeof est.calificaciones === 'string' ? JSON.parse(est.calificaciones) : est.calificaciones;
-        }
-      } catch (e) {}
-
       let sumProm = 0;
       let countMaterias = 0;
 
       const tbody = document.getElementById('tbodyNotasEst');
       tbody.innerHTML = materiasMostrar.map(mat => {
-        const nota = notasObj[mat.codigo] || { teoria: 0, practica: 0 };
-        const final = (Number(nota.teoria) || 0) + (Number(nota.practica) || 0);
-        const sinEval = final === 0 && !nota.teoria && !nota.practica;
+        const r = calcularNotaMateria(est, mat.codigo, window.cfgTrimestres);
+        const final = r.notaFinal;
+        const sinEval = r.sinEvaluar;
 
         if (!sinEval) { sumProm += final; countMaterias++; }
 
-        const notaStr = sinEval ? '—' : final;
-        const estadoStr = sinEval ? 'Sin evaluar' : (final >= 61 ? 'Aprobado' : 'Reprobado');
-        const bg = sinEval ? 'var(--bg)' : (final >= 61 ? 'var(--verde-100)' : '#FBEAE9');
-        const color = sinEval ? 'var(--texto-tenue)' : (final >= 61 ? 'var(--verde-800)' : 'var(--peligro)');
+        const notaStr = sinEval ? '—' : fmtNum(final);
+        const estadoStr = sinEval ? 'Sin evaluar' : (r.aprobado ? 'Aprobado' : 'Reprobado');
+        const bg = sinEval ? 'var(--bg)' : (r.aprobado ? 'var(--verde-100)' : '#FBEAE9');
+        const color = sinEval ? 'var(--texto-tenue)' : (r.aprobado ? 'var(--verde-800)' : 'var(--peligro)');
         const badgeArrastre = mat.isArrastre ? '<span class="pill pill-arrastre">Arrastre</span>' : '';
 
         return `
