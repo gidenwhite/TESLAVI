@@ -751,6 +751,29 @@
         : `<span class="materia-badge" style="background: rgba(211,47,47,0.1); color: #D32F2F;">Reprobado</span>`;
     }
 
+    /* Logo institucional para PDF/Excel/Word — mismo helper que index.html
+       (cacheado en base64, ver ese archivo para el detalle). Si el archivo
+       no está, los documentos se siguen generando igual, solo sin el logo. */
+    window._logoTeslaviBase64 = null;
+    window.obtenerLogoTeslavi = async function () {
+      if (window._logoTeslaviBase64) return window._logoTeslaviBase64;
+      try {
+        const resp = await fetch('assets/img/teslavi.jpg');
+        if (!resp.ok) throw new Error('No se encontró assets/img/teslavi.jpg');
+        const blob = await resp.blob();
+        window._logoTeslaviBase64 = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+        return window._logoTeslaviBase64;
+      } catch (e) {
+        console.warn('No se pudo cargar el logo institucional:', e);
+        return null;
+      }
+    };
+
     window.cambiarTabCalificar = function (idVista, btnActivo) {
       document.querySelectorAll('#seccion-calificar .vista-tab').forEach(v => v.classList.remove('activa'));
       document.getElementById(idVista).classList.add('activa');
@@ -1086,6 +1109,13 @@
       tituloCelda.font = { name: 'Arial', size: 14, bold: true, color: { argb: 'FFFFFFFF' } };
       tituloCelda.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF06231A' } };
       tituloCelda.alignment = { vertical: 'middle', horizontal: 'center' };
+      ws.getRow(1).height = 34;
+
+      const logoNotasXls = await window.obtenerLogoTeslavi();
+      if (logoNotasXls) {
+        const logoNotasXlsId = wb.addImage({ base64: logoNotasXls, extension: 'jpeg' });
+        ws.addImage(logoNotasXlsId, { tl: { col: 0.15, row: 0.1 }, ext: { width: 40, height: 40 } });
+      }
 
       ws.mergeCells(2, 1, 2, totalCols);
       const subCelda = ws.getCell(2, 1);
@@ -1116,7 +1146,7 @@
       link.click();
     };
 
-    window.exportarPDFNotas = function () {
+    window.exportarPDFNotas = async function () {
       if (!window.estudiantesCalificacionCache || window.estudiantesCalificacionCache.length === 0) return;
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF('l', 'pt', 'a4');
@@ -1125,6 +1155,9 @@
       const docente = window.usuarioLogueado?.nombre_completo || "Docente";
       const fecha = new Date().toLocaleDateString('es-ES');
       const codigo = window.materiaCalificacionActual;
+
+      const logoNotasPdf = await window.obtenerLogoTeslavi();
+      if (logoNotasPdf) doc.addImage(logoNotasPdf, 'JPEG', 20, 12, 40, 40);
 
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
@@ -1152,18 +1185,21 @@
       doc.save(`Calificaciones_${codigo}.pdf`);
     };
 
-    window.exportarWordNotas = function () {
+    window.exportarWordNotas = async function () {
       if (!window.estudiantesCalificacionCache || window.estudiantesCalificacionCache.length === 0) return;
       const titulo = document.getElementById('tituloMateriaCalificar').textContent;
       const subtitulo = document.getElementById('subtituloMateriaCalificar').textContent;
       const docente = window.usuarioLogueado?.nombre_completo || "Docente";
       const fecha = new Date().toLocaleDateString('es-ES');
       const codigo = window.materiaCalificacionActual;
+      const logoNotasWord = await window.obtenerLogoTeslavi();
+      const logoNotasWordHtml = logoNotasWord ? '<img src="' + logoNotasWord + '" style="width:60px; height:60px; border-radius:50%; display:block; margin:0 auto 8px;">' : '';
 
       let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">';
       html += '<head><meta charset="utf-8"><title>Calificaciones<\/title>';
       html += '<style>body { font-family: Arial, sans-serif; } table { width: 100%; border-collapse: collapse; margin-top: 15px; } th, td { border: 1px solid #146C46; padding: 5px; text-align: center; font-size: 10.5px; } td:nth-child(2) { text-align: left; } th { background-color: #146C46; color: white; } h2 { color: #06231A; text-align: center; font-size: 16px; margin:0; } h3 { color: #146C46; text-align: center; font-size: 14px; margin: 4px 0 16px 0; } p { font-size: 12px; margin: 2px 0; }<\/style>';
       html += '<\/head><body>';
+      html += logoNotasWordHtml;
       html += '<h2>INSTITUTO TECNOLOGICO TESLAVI<\/h2>';
       html += '<h3>PLANILLA DE CALIFICACIONES POR TRIMESTRE<\/h3>';
       html += `<p><strong>Materia:<\/strong> ${titulo}<\/p>`;
@@ -1478,6 +1514,13 @@
       tituloCelda.font = { name: 'Arial', size: 14, bold: true, color: { argb: 'FFFFFFFF' } };
       tituloCelda.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF06231A' } };
       tituloCelda.alignment = { vertical: 'middle', horizontal: 'center' };
+      ws.getRow(1).height = 34;
+
+      const logoAsistXls = await window.obtenerLogoTeslavi();
+      if (logoAsistXls) {
+        const logoAsistXlsId = wb.addImage({ base64: logoAsistXls, extension: 'jpeg' });
+        ws.addImage(logoAsistXlsId, { tl: { col: 0.15, row: 0.1 }, ext: { width: 40, height: 40 } });
+      }
 
       ws.mergeCells('A2:E2');
       const subCelda = ws.getCell('A2');
@@ -1525,7 +1568,7 @@
       URL.revokeObjectURL(url);
     };
 
-    window.exportarPDFAsistenciaDia = function () {
+    window.exportarPDFAsistenciaDia = async function () {
       if (!window.estudiantesAsistenciaCache || window.estudiantesAsistenciaCache.length === 0) return;
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
@@ -1542,6 +1585,8 @@
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
       doc.text("INSTITUTO TECNOLOGICO TESLAVI", 105, 12, { align: "center" });
+      const logoAsistPdf = await window.obtenerLogoTeslavi();
+      if (logoAsistPdf) doc.addImage(logoAsistPdf, 'JPEG', 8, 3, 14, 14);
 
       doc.setTextColor(11, 59, 42);
       doc.setFontSize(12);
@@ -1579,7 +1624,7 @@
       doc.save(`AsistenciaDia_${fechaSelec}_${window.materiaCalificacionActual}.pdf`);
     };
 
-    window.exportarWordAsistenciaDia = function () {
+    window.exportarWordAsistenciaDia = async function () {
       if (!window.estudiantesAsistenciaCache || window.estudiantesAsistenciaCache.length === 0) return;
       const titulo = document.getElementById('tituloMateriaAsistencia').textContent;
       const subtitulo = document.getElementById('subtituloMateriaAsistencia').textContent;
@@ -1587,11 +1632,14 @@
       const fechaSelec = document.getElementById('fechaAsistencia').value;
       const fechaHoy = new Date().toLocaleDateString('es-ES');
       const codigoMat = window.materiaCalificacionActual;
+      const logoAsistWord = await window.obtenerLogoTeslavi();
+      const logoAsistWordHtml = logoAsistWord ? '<img src="' + logoAsistWord + '" style="width:60px; height:60px; border-radius:50%; display:block; margin:0 auto 8px;">' : '';
 
       let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">';
       html += '<head><meta charset="utf-8"><title>Asistencia Dia<\/title>';
       html += '<style>body { font-family: Arial, sans-serif; } table { width: 100%; border-collapse: collapse; margin-top: 15px; } th, td { border: 1px solid #146C46; padding: 6px; text-align: left; font-size: 12px; } th { background-color: #146C46; color: white; } h2 { color: #06231A; text-align: center; font-size: 16px; margin:0; } h3 { color: #146C46; text-align: center; font-size: 14px; margin: 4px 0 16px 0; } p { font-size: 12px; margin: 2px 0; }<\/style>';
       html += '<\/head><body>';
+      html += logoAsistWordHtml;
       html += '<h2>INSTITUTO TECNOLOGICO TESLAVI<\/h2>';
       html += `<h3>ASISTENCIA DEL DÍA: ${fechaSelec}<\/h3>`;
       html += `<p><strong>Materia:<\/strong> ${titulo}<\/p>`;
@@ -1901,6 +1949,13 @@
       ws.getCell('A1').font = { bold: true, color: { argb: 'FFFFFFFF' } };
       ws.getCell('A1').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF06231A' } };
       ws.getCell('A1').alignment = { horizontal: 'center' };
+      ws.getRow(1).height = 34;
+
+      const logoHistXls = await window.obtenerLogoTeslavi();
+      if (logoHistXls) {
+        const logoHistXlsId = wb.addImage({ base64: logoHistXls, extension: 'jpeg' });
+        ws.addImage(logoHistXlsId, { tl: { col: 0.15, row: 0.1 }, ext: { width: 40, height: 40 } });
+      }
 
       ws.mergeCells(2, 1, 2, cols.length);
       ws.getCell('A2').value = `HISTORIAL DE ASISTENCIA - ${fechaHoy}`;
@@ -1956,7 +2011,7 @@
       link.click();
     };
 
-    window.exportarPDFHistorial = function () {
+    window.exportarPDFHistorial = async function () {
       if (!window.estudiantesHistorialCache || window.estudiantesHistorialCache.length === 0) return;
       const thead = document.getElementById('tablaHistorialHead');
       if (!thead.innerHTML || thead.innerHTML.includes('No has tomado asistencia')) return;
@@ -1977,6 +2032,9 @@
         Object.keys(asistObj[codigoMat] || {}).forEach(f => todasLasFechas.add(f));
       });
       let fechasArray = Array.from(todasLasFechas).sort();
+
+      const logoHistPdf = await window.obtenerLogoTeslavi();
+      if (logoHistPdf) doc.addImage(logoHistPdf, 'JPEG', 20, 12, 40, 40);
 
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");

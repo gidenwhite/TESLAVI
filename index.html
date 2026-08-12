@@ -4106,6 +4106,13 @@
       tituloCelda.font = { name: 'Arial', size: 14, bold: true, color: { argb: 'FFFFFFFF' } };
       tituloCelda.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF06231A' } };
       tituloCelda.alignment = { vertical: 'middle', horizontal: 'center' };
+      ws.getRow(1).height = 34;
+
+      const logoListaEst = await window.obtenerLogoTeslavi();
+      if (logoListaEst) {
+        const logoListaEstId = wb.addImage({ base64: logoListaEst, extension: 'jpeg' });
+        ws.addImage(logoListaEstId, { tl: { col: 0.15, row: 0.1 }, ext: { width: 40, height: 40 } });
+      }
 
       ws.mergeCells('A2:G2');
       const subtituloCelda = ws.getCell('A2');
@@ -4144,7 +4151,7 @@
       link.click();
     }
 
-    function exportarPDFLista() {
+    async function exportarPDFLista() {
       if (!window.estudiantesActuales || window.estudiantesActuales.length === 0) return;
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
@@ -4158,6 +4165,8 @@
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
       doc.text("INSTITUTO TECNOLOGICO TESLAVI", 105, 12, { align: "center" });
+      const logoLista = await window.obtenerLogoTeslavi();
+      if (logoLista) doc.addImage(logoLista, 'JPEG', 8, 3, 14, 14);
 
       doc.setTextColor(11, 59, 42);
       doc.setFontSize(12);
@@ -4183,14 +4192,17 @@
       doc.save(titulo + ".pdf");
     }
 
-    function exportarWordLista() {
+    async function exportarWordLista() {
       if (!window.estudiantesActuales || window.estudiantesActuales.length === 0) return;
       const titulo = generarTituloFiltro();
+      const logoLista = await window.obtenerLogoTeslavi();
+      const logoListaHtml = logoLista ? '<img src="' + logoLista + '" style="width:60px; height:60px; border-radius:50%; display:block; margin:0 auto 8px;">' : '';
 
       let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">';
       html += '<head><meta charset="utf-8"><title>' + titulo + '<\/title>';
       html += '<style>body { font-family: Arial, sans-serif; } table { width: 100%; border-collapse: collapse; margin-top: 20px; } th, td { border: 1px solid #146C46; padding: 8px; text-align: left; } th { background-color: #146C46; color: white; } h2 { color: #06231A; text-align: center; } h3 { color: #146C46; text-align: center; }<\/style>';
       html += '<\/head><body>';
+      html += logoListaHtml;
       html += '<h2>INSTITUTO TECNOLOGICO TESLAVI<\/h2>';
       html += '<h3>' + titulo.toUpperCase() + '<\/h3>';
       html += '<table><thead><tr><th>Apellidos y Nombres<\/th><th>CI<\/th><th>Semestre<\/th><th>Turno<\/th><th>Celular Est.<\/th><th>Celular Apod.<\/th><\/tr><\/thead><tbody>';
@@ -6679,7 +6691,7 @@
       }</tbody></table>`;
     };
 
-    window.exportarPdfMorosidad = function() {
+    window.exportarPdfMorosidad = async function() {
       if (!window.moroCache || window.moroCache.length === 0) {
         window.toast('No hay datos de morosidad para exportar.', 'info');
         return;
@@ -6692,6 +6704,8 @@
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
       doc.text("INSTITUTO TECNOLOGICO TESLAVI", 105, 12, { align: "center" });
+      const logoMoro = await window.obtenerLogoTeslavi();
+      if (logoMoro) doc.addImage(logoMoro, 'JPEG', 8, 3, 14, 14);
       doc.setTextColor(11, 59, 42);
       doc.setFontSize(12);
       doc.text("REPORTE DE MOROSIDAD", 105, 30, { align: "center" });
@@ -7500,6 +7514,13 @@
       tituloCelda.value = 'INSTITUTO TECNOLÓGICO TESLAVI - SISTEMA ACADÉMICO';
       tituloCelda.font = { name: 'Arial', size: 14, bold: true, color: { argb: 'FF06231A' } };
       tituloCelda.alignment = { horizontal: 'center' };
+      ws.getRow(1).height = 34;
+
+      const logoDocentesXls = await window.obtenerLogoTeslavi();
+      if (logoDocentesXls) {
+        const logoDocentesXlsId = wb.addImage({ base64: logoDocentesXls, extension: 'jpeg' });
+        ws.addImage(logoDocentesXlsId, { tl: { col: 0.15, row: 0.1 }, ext: { width: 40, height: 40 } });
+      }
 
       ws.mergeCells('A2:E2');
       const subCelda = ws.getCell('A2');
@@ -7546,7 +7567,7 @@
     }
     window.exportarExcelDocentes = exportarExcelDocentes;
 
-    function exportarPDFDocentes() {
+    async function exportarPDFDocentes() {
       const lista = window.docentesFiltradosCache || window.docentesCache || [];
       if (lista.length === 0) return;
       const { jsPDF } = window.jspdf;
@@ -7558,6 +7579,8 @@
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
       doc.text("INSTITUTO TECNOLOGICO TESLAVI", 148.5, 12, { align: "center" });
+      const logoDocentesPdf = await window.obtenerLogoTeslavi();
+      if (logoDocentesPdf) doc.addImage(logoDocentesPdf, 'JPEG', 8, 3, 14, 14);
 
       doc.setTextColor(11, 59, 42);
       doc.setFontSize(12);
@@ -7591,14 +7614,17 @@
     }
     window.exportarPDFDocentes = exportarPDFDocentes;
 
-    function exportarWordDocentes() {
+    async function exportarWordDocentes() {
       const lista = window.docentesFiltradosCache || window.docentesCache || [];
       if (lista.length === 0) return;
+      const logoDocentesWord = await window.obtenerLogoTeslavi();
+      const logoDocentesWordHtml = logoDocentesWord ? '<img src="' + logoDocentesWord + '" style="width:60px; height:60px; border-radius:50%; display:block; margin:0 auto 8px;">' : '';
 
       let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">';
       html += '<head><meta charset="utf-8"><title>Lista de Docentes</title>';
       html += '<style>body { font-family: Arial, sans-serif; } table { width: 100%; border-collapse: collapse; margin-top: 20px; } th, td { border: 1px solid #146C46; padding: 8px; text-align: left; } th { background-color: #146C46; color: white; } h2 { color: #06231A; text-align: center; } h3 { color: #146C46; text-align: center; }</style>';
       html += '<\/head><body>';
+      html += logoDocentesWordHtml;
       html += '<h2>INSTITUTO TECNOLOGICO TESLAVI</h2>';
       html += '<h3>LISTA DE DOCENTES</h3>';
       html += '<table><thead><tr><th>Nombre Completo</th><th>CI</th><th>Celular</th><th>Títulos Académicos</th><th>Materias Asignadas (Turno)</th></tr></thead><tbody>';
@@ -8589,6 +8615,13 @@
       tituloCelda.font = { name: 'Arial', size: 14, bold: true, color: { argb: 'FFFFFFFF' } };
       tituloCelda.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF06231A' } };
       tituloCelda.alignment = { vertical: 'middle', horizontal: 'center' };
+      ws.getRow(1).height = 34;
+
+      const logoNotasXls = await window.obtenerLogoTeslavi();
+      if (logoNotasXls) {
+        const logoNotasXlsId = wb.addImage({ base64: logoNotasXls, extension: 'jpeg' });
+        ws.addImage(logoNotasXlsId, { tl: { col: 0.15, row: 0.1 }, ext: { width: 40, height: 40 } });
+      }
 
       ws.mergeCells(2, 1, 2, totalCols);
       const subCelda = ws.getCell(2, 1);
@@ -8619,7 +8652,7 @@
       link.click();
     };
 
-    window.exportarPDFNotasAdmin = function() {
+    window.exportarPDFNotasAdmin = async function() {
       if (!window.estudiantesAdminNotasCache || window.estudiantesAdminNotasCache.length === 0) return;
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF('l', 'pt', 'a4');
@@ -8627,6 +8660,9 @@
       const subtitulo = document.getElementById('subtituloAdminNotas').textContent;
       const codigoMat = window.materiaAdminNotasActual;
       const fecha = new Date().toLocaleDateString('es-ES');
+
+      const logoNotasPdf = await window.obtenerLogoTeslavi();
+      if (logoNotasPdf) doc.addImage(logoNotasPdf, 'JPEG', 20, 12, 40, 40);
 
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
@@ -8654,17 +8690,20 @@
       doc.save(`Calificaciones_${codigoMat}.pdf`);
     };
 
-    window.exportarWordNotasAdmin = function() {
+    window.exportarWordNotasAdmin = async function() {
       if (!window.estudiantesAdminNotasCache || window.estudiantesAdminNotasCache.length === 0) return;
       const titulo = document.getElementById('tituloAdminNotas').textContent;
       const subtitulo = document.getElementById('subtituloAdminNotas').textContent;
       const codigoMat = window.materiaAdminNotasActual;
       const fecha = new Date().toLocaleDateString('es-ES');
+      const logoNotasWord = await window.obtenerLogoTeslavi();
+      const logoNotasWordHtml = logoNotasWord ? '<img src="' + logoNotasWord + '" style="width:60px; height:60px; border-radius:50%; display:block; margin:0 auto 8px;">' : '';
 
       let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">';
       html += '<head><meta charset="utf-8"><title>Calificaciones<\/title>';
       html += '<style>body { font-family: Arial, sans-serif; } table { width: 100%; border-collapse: collapse; margin-top: 15px; } th, td { border: 1px solid #146C46; padding: 5px; text-align: center; font-size: 10.5px; } td:nth-child(2) { text-align: left; } th { background-color: #146C46; color: white; } h2 { color: #06231A; text-align: center; font-size: 16px; margin:0; } h3 { color: #146C46; text-align: center; font-size: 14px; margin: 4px 0 16px 0; } p { font-size: 12px; margin: 2px 0; }<\/style>';
       html += '<\/head><body>';
+      html += logoNotasWordHtml;
       html += '<h2>INSTITUTO TECNOLOGICO TESLAVI<\/h2>';
       html += '<h3>PLANILLA DE CALIFICACIONES POR TRIMESTRE<\/h3>';
       html += `<p><strong>Materia:<\/strong> ${titulo}<\/p>`;
@@ -8729,6 +8768,13 @@
       ws.getCell('A1').font = { bold: true, color: { argb: 'FFFFFFFF' } };
       ws.getCell('A1').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF06231A' } };
       ws.getCell('A1').alignment = { horizontal: 'center' };
+      ws.getRow(1).height = 34;
+
+      const logoHistXls = await window.obtenerLogoTeslavi();
+      if (logoHistXls) {
+        const logoHistXlsId = wb.addImage({ base64: logoHistXls, extension: 'jpeg' });
+        ws.addImage(logoHistXlsId, { tl: { col: 0.15, row: 0.1 }, ext: { width: 40, height: 40 } });
+      }
 
       ws.mergeCells(2, 1, 2, cols.length);
       ws.getCell('A2').value = `HISTORIAL DE ASISTENCIA - ${fechaHoy}`;
@@ -8784,7 +8830,7 @@
       link.click();
     };
 
-    window.exportarPDFHistorialAdmin = function() {
+    window.exportarPDFHistorialAdmin = async function() {
       if (!window.estudiantesAdminAsistenciaCache || window.estudiantesAdminAsistenciaCache.length === 0) return;
       const codigoMat = window.materiaAdminAsistenciaActual;
       const fechasArray = _historialAdminFechas();
@@ -8796,6 +8842,9 @@
       const titulo = document.getElementById('tituloAdminAsistencia').textContent;
       const subtitulo = document.getElementById('subtituloAdminAsistencia').textContent;
       const fechaHoy = new Date().toLocaleDateString('es-ES');
+
+      const logoHistPdf = await window.obtenerLogoTeslavi();
+      if (logoHistPdf) doc.addImage(logoHistPdf, 'JPEG', 20, 12, 40, 40);
 
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
@@ -9037,7 +9086,13 @@
       t1.font = { name: 'Arial', size: 14, bold: true, color: { argb: 'FFFFFFFF' } };
       t1.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF06231A' } };
       t1.alignment = { vertical: 'middle', horizontal: 'center' };
-      ws.getRow(1).height = 28;
+      ws.getRow(1).height = 34;
+
+      const logoCentralXls = await window.obtenerLogoTeslavi();
+      if (logoCentralXls) {
+        const logoCentralXlsId = wb.addImage({ base64: logoCentralXls, extension: 'jpeg' });
+        ws.addImage(logoCentralXlsId, { tl: { col: 0.15, row: 0.1 }, ext: { width: 40, height: 40 } });
+      }
 
       // Fila 2: subtítulo
       ws.mergeCells(2, 1, 2, totalCols);
@@ -9157,7 +9212,7 @@
     };
 
     // --- PDF ---
-    window.exportarPDFCentralizador = function () {
+    window.exportarPDFCentralizador = async function () {
       const { estudiantes, materias, semestre, turno, planNombre } = window.centralizadorCache;
       if (!estudiantes || estudiantes.length === 0) { window.toast('Primero cargue el centralizador.', 'info'); return; }
 
@@ -9171,6 +9226,8 @@
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
       doc.text('INSTITUTO TECNOLÓGICO TESLAVI — MECÁNICA AUTOMOTRIZ', 148.5, 8, { align: 'center' });
+      const logoCentralPdf = await window.obtenerLogoTeslavi();
+      if (logoCentralPdf) doc.addImage(logoCentralPdf, 'JPEG', 6, 2, 13, 13);
       doc.setFontSize(9);
       doc.setFont('helvetica', 'normal');
       doc.text(`CENTRALIZADOR DE NOTAS — ${planNombre.toUpperCase()} — TURNO ${turno.toUpperCase()}`, 148.5, 14, { align: 'center' });
@@ -9258,9 +9315,11 @@
     };
 
     // --- WORD (HTML en Blob) ---
-    window.exportarWordCentralizador = function () {
+    window.exportarWordCentralizador = async function () {
       const { estudiantes, materias, semestre, turno, planNombre } = window.centralizadorCache;
       if (!estudiantes || estudiantes.length === 0) { window.toast('Primero cargue el centralizador.', 'info'); return; }
+      const logoCentralWord = await window.obtenerLogoTeslavi();
+      const logoCentralWordHtml = logoCentralWord ? `<img src="${logoCentralWord}" style="width:60px; height:60px; border-radius:50%; display:block; margin:0 auto 8px;">` : '';
 
       let headRow = '<tr style="background:#06231A; color:white;">';
       headRow += '<th style="padding:6px 8px; text-align:center; width:28px;">#</th>';
@@ -9313,6 +9372,7 @@
       footRow += `<td style="text-align:center; font-weight:bold; color:${cGen}; padding:6px 8px; font-size:13px;">${pGen}</td></tr>`;
 
       const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Centralizador<\/title><\/head><body>
+        ${logoCentralWordHtml}
         <h2 style="font-family:Arial; color:#06231A; margin-bottom:4px;">INSTITUTO TECNOLÓGICO TESLAVI<\/h2>
         <h3 style="font-family:Arial; color:#146C46; margin:0 0 16px;">CENTRALIZADOR DE NOTAS — ${planNombre.toUpperCase()} — TURNO ${turno.toUpperCase()}<\/h3>
         <table style="border-collapse:collapse; width:100%; font-family:Arial;">
