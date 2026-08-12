@@ -1,0 +1,145 @@
+/* ============================================================
+   01-tokens.css — Fase 1 (Fundaciones), §4 del brief.
+   Reemplaza el sistema de tokens de la Fase 0 (que solo movió
+   los valores viejos sin cambiarlos). Todo color/radio/espacio/
+   sombra/duración del proyecto sale de acá. Cero hex sueltos
+   fuera de este archivo.
+   Enlazado desde index.html, docente.html y estudiante.html.
+   ============================================================ */
+:root {
+  /* ── COLOR: verde institucional (rampa completa) ─────────── */
+  --verde-50:#F0F6F2;  --verde-100:#DCEBE2; --verde-200:#B7D6C4;
+  --verde-300:#86BB9F; --verde-400:#4E9B75; --verde-500:#1B8557;
+  --verde-600:#146C46; --verde-700:#0F5638; --verde-800:#0B402B;
+  --verde-900:#082D1F; --verde-950:#04180F;
+
+  /* ── COLOR: verde neón (pedido explícito del usuario) ───────
+     #00FF87 / #39FF14 son casi pura luz — con texto blanco o negro
+     puro encima el contraste es pésimo en un lado y perfecto en el
+     otro, así que la regla es: SIEMPRE fondo (botones, chips, barras,
+     bordes gruesos), NUNCA color de texto/enlace en línea. Con texto
+     oscuro (--verde-950) encima da ~13-15:1, altísimo. */
+  --verde-vivo:#00FF87;        /* botones y enlaces (fondo) */
+  --verde-vivo-hover:#39FF14;  /* detalles y hover */
+  --verde-vivo-rgb:0,255,135;
+  /* Misma familia pero oscurecida para poder usarse COMO color de
+     texto/enlace sobre fondo claro — #00FF87 en texto da 1.3:1 (invisible). */
+  --verde-vivo-texto:#008546;
+  /* Turquesa del mismo pedido — sobre superficies OSCURAS (sidebar,
+     panel de login) da >10:1; sobre fondo claro da ~1.4:1, por eso NO
+     se usa como texto secundario general, solo en superficies oscuras. */
+  --turquesa-claro:#A3E4D7;
+
+  /* ── COLOR: tinta (neutros con leve temperatura verde) ───── */
+  --tinta-50:#F3F6F4;  --tinta-100:#E7ECE9; --tinta-200:#D2DAD5;
+  --tinta-300:#AEBAB4; --tinta-400:#84968D; --tinta-500:#5C6B65;
+  --tinta-600:#45544D; --tinta-700:#33443C; --tinta-800:#22302A;
+  --tinta-900:#15211C; --tinta-950:#0B1310;
+
+  /* ── COLOR: señal (acento único, uso ESTRICTAMENTE limitado)
+     Naranja de seguridad de taller. Máximo UN uso por pantalla.
+     Permitido en: la banda de calibre cuando hay alerta, el badge
+     de mora crítica, el foco de un campo con error crítico.
+     PROHIBIDO en: fondos, botones primarios, decoración. ────── */
+  --senal-100:#FDEBE2; --senal-500:#E4572E; --senal-700:#B03C1B;
+
+  /* ── COLOR: semánticos de estado ─────────────────────────── */
+  --ok-bg:#E4EFE9;   --ok-borde:#B7D6C4; --ok-texto:#0F5638;
+  --alerta-bg:#FDF3E3; --alerta-borde:#EBD3A8; --alerta-texto:#8A5A08;
+  --error-bg:#FBEAE8;  --error-borde:#E9C6C2; --error-texto:#A7291F;
+  --info-bg:#E8F0F6;   --info-borde:#C3D8E8; --info-texto:#1E5A8A;
+
+  /* ── COLOR: escala de notas (§6.8/§6.11) — misma escala en toda
+     la app: Centralizador, Libretas, Estadísticas. 4 bandas fijas:
+     reprobado (<61) · al límite (61-70) · bien (71-85) · excelente (86-100). ── */
+  --nota-reprobado-bg:#FBEAE8;  --nota-reprobado-texto:#A7291F;
+  --nota-limite-bg:#FDF3E3;     --nota-limite-texto:#8A5A08;
+  --nota-bien-bg:#E4EFE9;       --nota-bien-texto:#0F5638;
+  --nota-excelente-bg:#DCEBE2;  --nota-excelente-texto:#082D1F;
+
+  /* ── SUPERFICIES (redefinidas por el tema oscuro) ─────────── */
+  --fondo:#F3F6F4;
+  --superficie:#FFFFFF;
+  --superficie-2:#F8FAF9;   /* cabeceras de tabla, campos en reposo */
+  --superficie-inversa:var(--verde-950);
+  --borde:#E2E8E5;
+  --borde-fuerte:#CBD5D0;
+  --texto:#15211C;
+  --texto-suave:#5C6B65;
+  --texto-tenue:#688072; /* §8 del brief: el valor original (#84968D) daba 2.98:1 sobre --superficie-2, bajo el mínimo de 3:1 */
+  --texto-inverso:#EAF3EE;
+
+  /* ── TIPOGRAFÍA ──────────────────────────────────────────── */
+  --f-display:'Sora',system-ui,sans-serif;             /* títulos, cifras grandes */
+  --f-cuerpo:'Plus Jakarta Sans',system-ui,sans-serif; /* interfaz general */
+  --f-datos:'Poppins',system-ui,sans-serif;            /* montos, notas, CI, fechas — pedido explícito del usuario */
+  --f-codigo:'Turret Road',var(--f-datos);             /* SOLO código de materia (ej. MOG 100) — tipografía basada en los números de carrocería de autos de carrera, pedida explícitamente */
+
+  --t-3xl:2.25rem;  --lh-3xl:1.08;  /* título de sección */
+  --t-2xl:1.75rem;  --lh-2xl:1.15;
+  --t-xl:1.375rem;  --lh-xl:1.25;
+  --t-lg:1.125rem;  --lh-lg:1.4;
+  --t-base:0.9375rem; --lh-base:1.55;  /* 15px — cuerpo */
+  --t-sm:0.8125rem; --lh-sm:1.5;       /* 13px — tablas, ayudas */
+  --t-xs:0.6875rem; --lh-xs:1.4;       /* 11px — etiquetas, eyebrows */
+
+  --tracking-etiqueta:0.09em;  /* solo para eyebrows en mayúsculas */
+
+  /* ── ESPACIO (escala de 4) ───────────────────────────────── */
+  --e-1:4px;  --e-2:8px;  --e-3:12px; --e-4:16px; --e-5:20px;
+  --e-6:24px; --e-8:32px; --e-10:40px; --e-12:48px; --e-16:64px;
+
+  /* ── RADIO ───────────────────────────────────────────────── */
+  --r-xs:4px;    /* chips, badges */
+  --r-sm:8px;    /* inputs, botones */
+  --r-md:12px;   /* tarjetas */
+  --r-lg:18px;   /* paneles, modales */
+  --r-xl:28px;   /* contenedor de login, superficies grandes */
+  --r-full:999px;
+
+  /* ── ELEVACIÓN ───────────────────────────────────────────── */
+  --sombra-0:none;
+  --sombra-1:0 1px 2px rgba(11,19,16,.05), 0 1px 1px rgba(11,19,16,.03);
+  --sombra-2:0 2px 4px rgba(11,19,16,.05), 0 4px 12px rgba(11,19,16,.05);
+  --sombra-3:0 8px 16px rgba(11,19,16,.07), 0 16px 40px rgba(11,19,16,.08);
+  --sombra-4:0 16px 32px rgba(11,19,16,.10), 0 32px 72px rgba(11,19,16,.14);
+  --anillo-foco:0 0 0 3px var(--verde-200);
+
+  /* ── MOVIMIENTO ──────────────────────────────────────────── */
+  --dur-instant:90ms;   /* cambio de color en hover */
+  --dur-rapida:150ms;   /* micro-interacción: botón, checkbox, chip */
+  --dur-base:220ms;     /* estándar: tabs, acordeón, toast */
+  --dur-lenta:340ms;    /* entrada/salida grande: modal, panel, sección */
+  --ease-salida:cubic-bezier(.16,1,.3,1);      /* entradas — el 90% de los casos */
+  --ease-entrada:cubic-bezier(.4,0,1,1);       /* salidas */
+  --ease-estandar:cubic-bezier(.4,0,.2,1);     /* movimientos entre dos estados */
+  --ease-resorte:cubic-bezier(.34,1.56,.64,1); /* solo confirmaciones de éxito */
+
+  /* ── CAPAS ───────────────────────────────────────────────── */
+  --z-base:0; --z-tabla-sticky:10; --z-topbar:50; --z-sidebar:100;
+  --z-overlay:900; --z-modal:1000; --z-toast:1100; --z-tooltip:1200;
+
+  /* ── Alias de compatibilidad Fase 0→1 (nombres viejos que aún
+     puedan quedar sin migrar en algún rincón no detectado). No
+     usar en código nuevo — usar los tokens de arriba. ────────── */
+  --radio: var(--r-sm);
+}
+
+/* ---------------- Modo oscuro (§4.1) ---------------- */
+html[data-tema="oscuro"]{
+  --fondo:#0B1310; --superficie:#15211C; --superficie-2:#1B2A24;
+  --borde:#2A3B33; --borde-fuerte:#3A4E44;
+  --texto:#E7ECE9; --texto-suave:#AEBAB4; --texto-tenue:#84968D;
+  --ok-bg:#0F3125; --ok-texto:#86BB9F;
+  --alerta-bg:#3A2A10; --alerta-texto:#E8C87A;
+  --error-bg:#3A1714; --error-texto:#F0A79E;
+  --info-bg:#122834; --info-texto:#9BC4E0;
+  --nota-reprobado-bg:#3A1714; --nota-reprobado-texto:#F0A79E;
+  --nota-limite-bg:#3A2A10;    --nota-limite-texto:#E8C87A;
+  --nota-bien-bg:#0F3125;      --nota-bien-texto:#86BB9F;
+  --nota-excelente-bg:#0F3125; --nota-excelente-texto:#B7D6C4;
+  --sombra-1:0 1px 2px rgba(0,0,0,.4);
+  --sombra-2:0 2px 4px rgba(0,0,0,.4), 0 4px 12px rgba(0,0,0,.3);
+  --sombra-3:0 8px 16px rgba(0,0,0,.45), 0 16px 40px rgba(0,0,0,.35);
+  --sombra-4:0 16px 32px rgba(0,0,0,.5), 0 32px 72px rgba(0,0,0,.45);
+}

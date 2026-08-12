@@ -1,0 +1,922 @@
+/* ============================================================
+   03-componentes.css — Fase 0 (Corte)
+   Sistema visual compartido entre index.html y docente.html
+   (estudiante.html usa un layout propio, más simple, y no
+   enlaza este archivo). Extraído sin cambio de valores — eran
+   ~1500 líneas duplicadas carácter por carácter entre los dos
+   archivos. La Fase 2 reemplaza estas reglas por la biblioteca
+   de componentes de §5 del brief.
+   ============================================================ */
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--f-cuerpo);
+  color: var(--texto);
+  background: var(--fondo);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+}
+
+/* ---------------- Login: panel institucional + formulario ---------------- */
+.layout {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+}
+
+.panel-marca {
+  position: relative;
+  background: var(--verde-950);
+  background-image: linear-gradient(160deg, var(--verde-900) 0%, var(--verde-950) 70%);
+  color: #EAF3EE;
+  padding: 56px 64px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.grid-tecnica {
+  position: absolute;
+  inset: 0;
+  opacity: .16;
+  background-image:
+    linear-gradient(var(--verde-vivo) 1px, transparent 1px),
+    linear-gradient(90deg, var(--verde-vivo) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(circle at 30% 30%, black 0%, transparent 70%);
+  animation: derivaGridTecnica 60s linear infinite;
+}
+
+/* Deriva lentísima de la retícula técnica del login — §6.1 del brief.
+   El tamaño del recorrido (40px) coincide con background-size para que
+   el loop sea perfectamente continuo, sin salto visible. */
+@keyframes derivaGridTecnica {
+  from { background-position: 0 0, 0 0; }
+  to   { background-position: 40px 40px, 40px 40px; }
+}
+
+.marca-cabecera {
+  position: relative;
+  z-index: 1;
+}
+
+.marca-eyebrow {
+  font-family: var(--f-datos);
+  font-size: 12px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--verde-vivo);
+  margin: 0 0 20px;
+}
+
+.sello {
+  width: 56px;
+  height: 56px;
+  border: 1.5px solid var(--verde-vivo);
+  border-radius: var(--radio);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 28px;
+  position: relative;
+}
+
+.sello::before,
+.sello::after {
+  content: "";
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border: 1.5px solid var(--verde-vivo);
+}
+
+.sello::before {
+  top: -4px;
+  left: -4px;
+  border-width: 1.5px 0 0 1.5px;
+}
+
+.sello::after {
+  bottom: -4px;
+  right: -4px;
+  border-width: 0 1.5px 1.5px 0;
+}
+
+.sello svg {
+  width: 26px;
+  height: 26px;
+}
+
+.marca-subtitulo {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #C5D9CD;
+  max-width: 40ch;
+  margin: 0;
+}
+
+.marca-pie dt {
+  color: var(--verde-vivo);
+  letter-spacing: .06em;
+  margin-bottom: 4px;
+}
+
+.marca-pie dd {
+  margin: 0;
+  color: #EAF3EE;
+  font-size: 13px;
+}
+
+.panel-acceso {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--e-12) var(--e-8);
+  background: var(--superficie);
+}
+
+.form-wrap {
+  width: 100%;
+  max-width: 380px;
+}
+
+.form-eyebrow {
+  font-family: var(--f-datos);
+  font-size: 12px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+  margin: 0 0 8px;
+}
+
+.form-titulo {
+  font-family: var(--f-display);
+  font-weight: 600;
+  font-size: 26px;
+  margin: 0 0 6px;
+  color: var(--verde-950);
+}
+
+.form-desc {
+  font-size: 14px;
+  color: var(--texto-suave);
+  margin: 0 0 32px;
+  line-height: 1.5;
+}
+
+.campo {
+  margin-bottom: 18px;
+}
+
+.campo input:disabled {
+  opacity: .6;
+}
+
+.form-pie {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--borde);
+  font-size: 12.5px;
+  color: var(--texto-suave);
+  line-height: 1.6;
+}
+
+.form-pie strong {
+  color: var(--tinta-700);
+}
+
+@media (max-width: 860px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-marca {
+    padding: 40px 28px;
+    min-height: 220px;
+  }
+
+  .marca-titulo {
+    font-size: 26px;
+  }
+
+  .marca-pie {
+    display: none;
+  }
+
+  .panel-acceso {
+    padding: 36px 24px 56px;
+  }
+}
+
+/* ---------------- Botones — CTA verde neón, pedido explícito del usuario ----------------
+   #00FF87 de fondo con texto blanco no se lee (1.3:1) — la solución
+   estándar para acentos neón es texto OSCURO encima, que da ~13-14:1. */
+.btn-ingresar {
+  width: 100%;
+  padding: var(--e-3) var(--e-4);
+  margin-top: 6px;
+  font-family: var(--f-cuerpo);
+  font-weight: 700;
+  font-size: 14.5px;
+  letter-spacing: .01em;
+  color: var(--verde-950);
+  background: var(--verde-vivo);
+  border: 1.5px solid var(--verde-vivo-texto);
+  border-radius: var(--radio);
+  cursor: pointer;
+  box-shadow: var(--sombra-1);
+  transition: background var(--dur-rapida) var(--ease-estandar),
+              box-shadow var(--dur-rapida) var(--ease-estandar),
+              transform var(--dur-instant) var(--ease-estandar);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-ingresar:hover:not(:disabled) {
+  background: var(--verde-vivo-hover);
+  box-shadow: var(--sombra-2), 0 0 0 4px rgba(var(--verde-vivo-rgb), .28);
+}
+
+.btn-ingresar:active:not(:disabled) {
+  background: var(--verde-vivo-texto);
+  color: #fff;
+  box-shadow: var(--sombra-1);
+  transform: translateY(1px);
+}
+
+.btn-ingresar:disabled {
+  background: var(--tinta-200);
+  color: var(--tinta-500);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.btn-secundario {
+  padding: var(--e-3) var(--e-4);
+  font-family: var(--f-cuerpo);
+  font-weight: 600;
+  font-size: 14.5px;
+  color: var(--verde-vivo-texto);
+  background: var(--verde-50);
+  border: 1px solid var(--verde-200);
+  border-radius: var(--radio);
+  cursor: pointer;
+  transition: background var(--dur-rapida) var(--ease-estandar),
+              border-color var(--dur-rapida) var(--ease-estandar),
+              transform var(--dur-instant) var(--ease-estandar);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-secundario:hover:not(:disabled) {
+  background: var(--verde-100);
+  border-color: var(--verde-300);
+}
+
+.btn-secundario:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* Acciones destructivas (eliminar, anular) — mismo molde que
+   .btn-ingresar pero en rojo, para no confundir con "Guardar". */
+.btn-peligro {
+  width: 100%;
+  padding: var(--e-3) var(--e-4);
+  font-family: var(--f-cuerpo);
+  font-weight: 600;
+  font-size: 14.5px;
+  color: #fff;
+  background: var(--error-texto);
+  border: none;
+  border-radius: var(--radio);
+  cursor: pointer;
+  transition: background var(--dur-rapida) var(--ease-estandar);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-peligro:hover:not(:disabled) {
+  background: #8a2119;
+}
+
+.btn-peligro:disabled {
+  background: var(--tinta-200);
+  color: var(--tinta-500);
+  cursor: not-allowed;
+}
+
+/* ---------------- Toast y confirmar (assets/js/01-ui.js) ---------------- */
+.modal-card { animation: modalEntrada var(--dur-lenta) var(--ease-salida); }
+@keyframes modalEntrada {
+  from { opacity: 0; transform: translateY(12px) scale(.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ---------------- Spinner y mensajes ---------------- */
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, .4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: girar .7s linear infinite;
+  display: none;
+}
+
+.cargando .spinner {
+  display: inline-block;
+}
+
+.mensaje {
+  display: none;
+  margin-top: 16px;
+  padding: 11px 13px;
+  border-radius: var(--radio);
+  font-size: 13px;
+  line-height: 1.5;
+  border: 1px solid transparent;
+}
+
+.mensaje.visible {
+  display: block;
+}
+
+.mensaje.error {
+  background: #FBEAE8;
+  border-color: #E9C6C2;
+  color: var(--error-texto);
+}
+
+/* ---------------- Dashboard: sidebar, topbar, secciones ---------------- */
+.dashboard-layout {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  background: var(--fondo);
+}
+
+.sidebar {
+  width: 260px;
+  background: var(--verde-950);
+  background-image: linear-gradient(160deg, var(--verde-900) 0%, var(--verde-950) 70%);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.sidebar-header {
+  padding: var(--e-6);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* flex:1 + min-height:0 (no "flex:none") es lo que deja que ESTE bloque
+   sea el único que crece/se achica y scrollea — si no, con 13 ítems de
+   menú (Admin) el total de la columna supera los 100vh del sidebar y
+   "Carrera"/"Cerrar sesión" se desbordan fuera de la caja, apareciendo
+   sueltos sobre el fondo blanco de la página. */
+.sidebar-menu {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: var(--e-6) 0;
+  overflow-y: auto;
+}
+
+.menu-item {
+  padding: 14px var(--e-6);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #C5D9CD;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: background var(--dur-rapida) var(--ease-estandar),
+              color var(--dur-rapida) var(--ease-estandar),
+              border-color var(--dur-rapida) var(--ease-estandar);
+  font-weight: 500;
+  font-size: 15px;
+}
+
+/* Corrige un bug de origen: el HTML marca el ítem activo con la clase
+   "activa" (español) pero esta regla decía ".active" (inglés) — nunca
+   coincidía, así que el ítem activo del sidebar jamás se resaltaba. */
+.menu-item:hover {
+  background: rgba(var(--verde-vivo-rgb), .18);
+  color: #fff;
+  border-left-color: var(--verde-vivo);
+}
+
+/* El ítem activo es la señal de identidad más vista de toda la app —
+   por pedido explícito, el verde menta es EL color principal acá: no
+   un acento fino, sino el fondo sólido del ítem seleccionado. */
+.menu-item.activa {
+  background: var(--verde-vivo);
+  color: var(--verde-950);
+  border-left-color: var(--verde-vivo-hover);
+  font-weight: 700;
+}
+
+/* §2.2/§5.9 del brief: "un menú no es una secuencia" — se quita la
+   numeración 01-13 decorativa. Se apunta al span que sigue al ícono
+   (así funciona sin tocar el HTML de cada ítem, que hoy no envuelve
+   la numeración en una clase propia). */
+.menu-item svg.ui-icon + span {
+  display: none;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.topbar {
+  height: 70px;
+  background: #fff;
+  border-bottom: 1px solid var(--borde);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--e-12);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.topbar::after {
+  /* Línea sólida, no degradé — el brief (§14) solo permite degradados en
+     el panel de marca del login y la barra lateral. */
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--verde-vivo-texto);
+}
+
+.topbar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: .04;
+  background-image:
+    linear-gradient(var(--verde-vivo-texto) 1px, transparent 1px),
+    linear-gradient(90deg, var(--verde-vivo-texto) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+.content-area {
+  flex: 1;
+  min-height: 100%;
+  padding: var(--e-12);
+  overflow-y: auto;
+}
+
+.seccion {
+  display: none;
+}
+
+.seccion.activa {
+  display: block;
+  min-height: 100%;
+  padding-bottom: var(--e-16);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------------- Tarjetas de materias, tablas ---------------- */
+.semestre-card {
+  background: #fff;
+  border-radius: var(--r-md);
+  box-shadow: var(--sombra-1);
+  margin-bottom: 32px;
+  border: 1px solid var(--borde);
+  overflow: hidden;
+  transition: box-shadow var(--dur-base) var(--ease-estandar);
+}
+
+.semestre-card:hover {
+  box-shadow: var(--sombra-2);
+}
+
+.semestre-header {
+  background: var(--verde-950);
+  color: white;
+  padding: var(--e-4) var(--e-6);
+  font-family: var(--f-display);
+  font-size: 18px;
+}
+
+.materia-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.materia-table th,
+.materia-table td {
+  padding: var(--e-4);
+  text-align: left;
+  border-bottom: 1px solid var(--borde);
+  font-size: 14px;
+}
+
+.materia-table th {
+  background: var(--fondo);
+  color: var(--tinta-700);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.materia-table tr:last-child td {
+  border-bottom: none;
+}
+
+.materia-badge {
+  background: transparent;
+  color: var(--tinta-700);
+  border: 1px solid var(--tinta-200);
+  padding: 4px 8px;
+  border-radius: var(--r-xs);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--f-datos);
+  white-space: nowrap;
+}
+
+/* Código de materia (ej. "MOG 100") — tipografía cuadrada/deportiva
+   inspirada en los números de carrocería de autos de carrera, pedida
+   explícitamente. SOLO para el código, nunca para CI/montos/fechas
+   (.materia-badge se usa para esas cosas también, por eso esta es una
+   clase aparte que se suma, no un reemplazo de .materia-badge). */
+.codigo-materia {
+  font-family: var(--f-codigo);
+  font-weight: 700;
+  letter-spacing: .03em;
+}
+
+.header-title {
+  font-family: var(--f-display);
+  font-size: 28px;
+  margin: 0 0 8px 0;
+  color: var(--verde-950);
+  position: relative;
+  padding-left: 14px;
+}
+
+.header-title::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid var(--verde-vivo-texto);
+  border-width: 1.5px 0 0 1.5px;
+}
+
+.header-desc {
+  color: var(--texto-suave);
+  margin: 0 0 32px 0;
+}
+
+/* ---------------- Select restilizado ---------------- */
+.select-css {
+  width: 100%;
+  padding: 11px 13px;
+  font-family: var(--f-cuerpo);
+  font-size: 14.5px;
+  color: var(--texto);
+  background: var(--fondo);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+  cursor: pointer;
+}
+
+.select-css:focus {
+  border-color: var(--verde-vivo-texto);
+  box-shadow: 0 0 0 3px rgba(var(--verde-vivo-rgb), .22);
+  background: var(--superficie);
+}
+
+/* ---------------- Tabs ---------------- */
+.tabs-container {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--borde);
+}
+
+.tab-btn {
+  padding: var(--e-3) var(--e-6);
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-family: var(--f-cuerpo);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--texto-suave);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-btn.active {
+  color: var(--verde-vivo-texto);
+  /* verde-vivo(#00FF87) sobre blanco da 1.3:1 — invisible acá; esta
+     variante oscurecida de la misma familia sí se ve como línea fina. */
+  border-bottom-color: var(--verde-vivo-texto);
+}
+
+.tab-btn:hover:not(.active) {
+  color: var(--verde-vivo-texto);
+}
+
+.vista-tab {
+  display: none;
+}
+
+.vista-tab.activa {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+.ui-icon {
+  vertical-align: text-bottom;
+  margin-right: 6px;
+  display: inline-block;
+}
+
+/* ---------------- Control segmentado — §6.7 del brief ----------------
+   Reemplaza los <select> de 2-3 opciones excluyentes (ej. estado de
+   asistencia P/F/FJ) por botones grandes, más rápidos de tocar en
+   celular que abrir un desplegable. */
+.segmentado {
+  display: inline-flex;
+  border: 1px solid var(--borde);
+  border-radius: var(--r-sm, 8px);
+  overflow: hidden;
+  width: fit-content;
+}
+
+.seg-btn {
+  border: none;
+  border-right: 1px solid var(--borde);
+  background: var(--superficie);
+  color: var(--texto-suave);
+  font-family: var(--f-cuerpo);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 12px;
+  cursor: pointer;
+  transition: background var(--dur-rapida, .15s) var(--ease-estandar), color var(--dur-rapida, .15s) var(--ease-estandar);
+}
+
+.seg-btn:last-child {
+  border-right: none;
+}
+
+.seg-btn:hover:not(.activo):not(:disabled) {
+  background: var(--verde-50);
+  color: var(--verde-vivo-texto);
+}
+
+.seg-btn.activo {
+  background: var(--verde-vivo);
+  color: var(--verde-950);
+}
+
+.seg-btn:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+/* Fila de tabla clicable alcanzable por teclado — §8 punto 3 del brief:
+   "Las filas de Financiero hoy tienen onclick sin ser alcanzables por
+   teclado." tabindex="0" en el <tr> + este outline al enfocar. */
+.fila-clicable {
+  cursor: pointer;
+}
+.fila-clicable:focus-visible {
+  outline: 2px solid var(--verde-vivo-texto);
+  outline-offset: -2px;
+}
+
+/* Botón fantasma con ícono — §6.9 del brief: reemplaza los emoji sueltos
+   (📞 💬) de Cobranza por SVG dentro de un botón chico y accesible. */
+.btn--fantasma {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-sm, 8px);
+  border: 1px solid transparent;
+  background: none;
+  color: var(--texto-suave);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--dur-instant, 90ms) var(--ease-estandar), color var(--dur-instant, 90ms) var(--ease-estandar);
+}
+.btn--fantasma:hover {
+  background: var(--verde-50);
+  color: var(--verde-vivo-texto);
+}
+.btn--fantasma:focus-visible {
+  outline: 2px solid var(--verde-vivo-texto);
+  outline-offset: 1px;
+}
+
+/* Campo de búsqueda con ícono — reemplaza el emoji 🔍 dentro del placeholder */
+.campo-buscar {
+  position: relative;
+}
+.campo-buscar svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--texto-tenue);
+  pointer-events: none;
+}
+.campo-buscar input {
+  padding-left: 34px !important;
+}
+
+/* ---------------- Documento oficial (Libretas) — §6.11 del brief ----------------
+   "Es un documento oficial... la pantalla donde la Ficha Técnica debe verse
+   más pura." Ancho fijo tipo A4, sombra de papel y marcas de esquina. */
+.documento-oficial {
+  position: relative;
+  max-width: 780px;
+  margin: 0 auto;
+  background: var(--superficie);
+  box-shadow: var(--sombra-3);
+  padding: 48px 56px;
+}
+
+.marca-esquina {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--verde-vivo-texto);
+  pointer-events: none;
+}
+.marca-esquina--tl { top: 14px; left: 14px; border-right: none; border-bottom: none; }
+.marca-esquina--tr { top: 14px; right: 14px; border-left: none; border-bottom: none; }
+.marca-esquina--bl { bottom: 14px; left: 14px; border-right: none; border-top: none; }
+.marca-esquina--br { bottom: 14px; right: 14px; border-left: none; border-top: none; }
+
+.franja-identificacion {
+  font-family: var(--f-datos);
+  font-size: var(--t-xs);
+  letter-spacing: var(--tracking-etiqueta);
+  text-transform: uppercase;
+  color: var(--texto-suave);
+  text-align: center;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--borde);
+}
+
+.grilla-datos-doc {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--borde);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.grilla-datos-doc > div {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--borde);
+}
+.grilla-datos-doc > div:nth-child(odd) { border-right: 1px solid var(--borde); }
+.grilla-datos-doc > div:nth-last-child(-n+2) { border-bottom: none; }
+.grilla-datos-doc .etiqueta-dato {
+  font-size: var(--t-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-etiqueta);
+  color: var(--texto-suave);
+  margin-bottom: 4px;
+}
+.grilla-datos-doc .valor-dato {
+  font-weight: 600;
+  color: var(--verde-950);
+  font-size: var(--t-base);
+}
+
+/* ---------------- Responsive: sidebar móvil ---------------- */
+.btn-hamburguesa {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: var(--radio);
+  color: var(--verde-950);
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.btn-hamburguesa:hover {
+  background: var(--fondo);
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 35, 26, 0.45);
+  z-index: 90;
+  backdrop-filter: blur(1px);
+}
+
+.sidebar-overlay.visible {
+  display: block;
+}
+
+.tabla-scroll-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ---------------- Combobox (selector con búsqueda) — §5.3 del brief ----------------
+   Reemplaza los <select size="8"> y selects nativos largos. Se abre al
+   escribir o al enfocar; navegación con teclado; resalta la coincidencia
+   con <mark>, sin el amarillo nativo (peso+color en vez de decoración). */
+.combobox {
+  position: relative;
+}
+
+.combobox-lista {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 320px;
+  overflow-y: auto;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-md);
+  box-shadow: var(--sombra-3);
+  padding: 6px;
+  z-index: 30;
+}
+
+.combobox-item {
+  padding: 8px 10px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.combobox-item:hover,
+.combobox-item.activo {
+  background: var(--verde-100);
+}
+
+.combobox-item mark {
+  background: transparent;
+  color: var(--verde-vivo-texto);
+  font-weight: 700;
+}
+
+.combobox-vacio {
+  padding: 18px 10px;
+  text-align: center;
+  color: var(--texto-suave);
+  font-size: 13px;
+}

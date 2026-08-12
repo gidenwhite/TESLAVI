@@ -1,0 +1,117 @@
+/* ============================================================
+   02-base.css — Fase 0 (Corte) + Fase 1 (Fundaciones)
+   Reset y reglas universales, extraídas sin cambio de valores
+   desde index.html, docente.html y estudiante.html (las 3 lo
+   tenían duplicado idéntico). Enlazado desde los 3 HTML.
+   ============================================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: light dark;
+}
+
+/* §7 del brief: la animación aclara, no decora. Con esta media
+   query activa, todo el movimiento del sistema se reduce a
+   prácticamente cero — los cambios de estado siguen siendo
+   evidentes por color/ícono/texto, sin depender del movimiento. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.campo label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--tinta-700);
+  margin-bottom: 6px;
+}
+
+.campo input {
+  width: 100%;
+  padding: 11px 13px;
+  font-family: var(--f-cuerpo);
+  font-size: 14.5px;
+  color: var(--texto);
+  background: var(--fondo);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Sello institucional del login (index.html, docente.html, estudiante.html):
+   las marcas se "dibujan" al entrar, en vez de aparecer de golpe — §6.1.
+   El valor de stroke-dasharray/dashoffset es más largo que cualquiera de
+   los trazos reales, así que el efecto funciona sin medir cada path. */
+.sello svg path {
+  stroke-dasharray: 90;
+  stroke-dashoffset: 90;
+  animation: dibujarSello .9s var(--ease-salida) forwards;
+}
+.sello svg path:nth-child(2) { animation-delay: .18s; }
+.sello svg path:nth-child(3) { animation-delay: .32s; }
+
+@keyframes dibujarSello {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Banda de calibre — §3.3 del brief. El único lugar del sistema donde
+   se permite un degradado además del panel de marca/sidebar: es el
+   elemento "que se luce", todo el resto queda quieto y preciso. */
+.banda-calibre {
+  position: relative;
+  height: 6px;
+  background: var(--superficie-2);
+  border-bottom: 1px solid var(--borde);
+  flex-shrink: 0;
+}
+.banda-calibre__ticks {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(90deg, var(--borde-fuerte) 0 1px, transparent 1px 12px);
+  opacity: .5;
+}
+.banda-calibre__relleno {
+  position: absolute;
+  inset: 0;
+  transform-origin: left center;
+  transform: scaleX(var(--avance, 0));
+  background: linear-gradient(90deg, var(--verde-600), var(--verde-vivo-texto));
+  transition: transform var(--dur-lenta) var(--ease-salida);
+}
+
+/* Objetivos táctiles mínimos en móvil (§Touch & Interaction, 44×44px) —
+   los controles compactos (segmentado, tabs, íconos fantasma) están bien
+   en desktop con el mouse pero son difíciles de tocar con el dedo. Solo
+   se agranda bajo el breakpoint móvil para no engordar la UI de escritorio. */
+@media (max-width: 768px) {
+  .seg-btn {
+    min-height: 44px;
+    padding: 10px 14px;
+  }
+  .btn--fantasma {
+    width: 40px;
+    height: 40px;
+  }
+  .tab-btn {
+    min-height: 44px;
+    padding: var(--e-3) var(--e-4);
+  }
+  .menu-item {
+    min-height: 44px;
+  }
+}
