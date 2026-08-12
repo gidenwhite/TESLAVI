@@ -10,45 +10,36 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap"
     rel="stylesheet">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+  <!-- Fase 0 (Corte): tokens/base compartidos con index.html y docente.html
+       (no enlaza 03-componentes.css: este portal usa un layout propio,
+       más simple, sin sidebar/topbar/dashboard) -->
+  <link rel="stylesheet" href="assets/css/01-tokens.css">
+  <!-- Fase 1: aplicar el tema ANTES del primer render (ver index.html).
+       No sigue prefers-color-scheme todavía: el modo oscuro se termina
+       de auditar en Fase 2/3, solo se activa si el usuario lo eligió. -->
+  <script>
+    (function () {
+      try {
+        var guardado = localStorage.getItem('teslavi-tema');
+        document.documentElement.setAttribute('data-tema', guardado === 'oscuro' ? 'oscuro' : 'claro');
+      } catch (e) { /* localStorage bloqueado: se queda en modo claro */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="assets/css/02-base.css">
+  <script src="assets/js/01-ui.js"></script>
+
   <style>
-    :root {
-      --verde-950: #06231A;
-      --verde-900: #0B3B2A;
-      --verde-800: #0F4F38;
-      --verde-700: #146C46;
-      --verde-600: #1B8557;
-      --verde-100: #E4EFE9;
-      --acero-700: #3E4A4F;
-      --acero-500: #64737A;
-      --acero-200: #C9D2D5;
-      --bg: #F5F7F6;
-      --superficie: #FFFFFF;
-      --texto: #172420;
-      --texto-tenue: #5C6B65;
-      --borde: #DCE4E0;
-      --peligro: #A7291F;
-      --radio: 3px;
-      --radio-superficie: 6px;
-      --sombra-1: 0 1px 2px rgba(6, 35, 26, .06);
-      --sombra-2: 0 12px 32px rgba(6, 35, 26, .14);
-      --font-display: 'Space Grotesk', sans-serif;
-      --font-body: 'Inter', sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
-    }
-
-    * { box-sizing: border-box; }
-
     html, body { height: 100%; margin: 0; }
 
     body {
-      font-family: var(--font-body);
+      font-family: var(--f-cuerpo);
       color: var(--texto);
-      background: var(--bg);
+      background: var(--fondo);
       -webkit-font-smoothing: antialiased;
       min-height: 100vh;
       display: flex;
@@ -56,10 +47,10 @@
       justify-content: center;
       padding: 24px;
       background-image:
-        linear-gradient(var(--verde-600) 1px, transparent 1px),
-        linear-gradient(90deg, var(--verde-600) 1px, transparent 1px);
+        linear-gradient(var(--verde-vivo-texto) 1px, transparent 1px),
+        linear-gradient(90deg, var(--verde-vivo-texto) 1px, transparent 1px);
       background-size: 40px 40px;
-      background-color: var(--bg);
+      background-color: var(--fondo);
     }
     body::before {
       content: none;
@@ -92,7 +83,7 @@
     }
 
     .marca h1 {
-      font-family: var(--font-display);
+      font-family: var(--f-display);
       font-size: 20px;
       color: var(--verde-950);
       margin: 0 0 4px;
@@ -100,39 +91,26 @@
 
     .marca p {
       font-size: 13px;
-      color: var(--texto-tenue);
+      color: var(--texto-suave);
       margin: 0;
     }
 
     .tarjeta {
       background: var(--superficie);
       border: 1px solid var(--borde);
-      border-radius: var(--radio-superficie);
+      border-radius: var(--r-md);
       box-shadow: var(--sombra-2);
       padding: 32px;
     }
 
     .campo { margin-bottom: 16px; }
 
-    .campo label {
-      display: block;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--acero-700);
-      margin-bottom: 6px;
-    }
-
+    /* Pisa el font-size/padding de .campo input de 02-base.css (14.5px):
+       por debajo de 16px, iOS Safari hace zoom automático al enfocar el
+       campo. También sube la altura táctil a ~44px. */
     .campo input {
-      width: 100%;
-      padding: 11px 13px;
-      font-family: var(--font-body);
-      font-size: 14.5px;
-      color: var(--texto);
-      background: var(--bg);
-      border: 1px solid var(--borde);
-      border-radius: var(--radio);
-      outline: none;
-      transition: border-color .15s ease, box-shadow .15s ease;
+      font-size: 16px;
+      padding: 13px;
     }
 
     .campo input:focus {
@@ -141,39 +119,41 @@
     }
 
     .campo input:focus-visible {
-      outline: 2px solid var(--verde-600);
+      outline: 2px solid var(--verde-vivo-texto);
       outline-offset: 2px;
     }
 
     .campo .ayuda {
       font-size: 12px;
-      color: var(--texto-tenue);
+      color: var(--texto-suave);
       margin-top: 6px;
     }
 
     .btn {
       width: 100%;
+      min-height: 44px;
       padding: 13px 16px;
-      font-family: var(--font-body);
-      font-weight: 600;
+      font-family: var(--f-cuerpo);
+      font-weight: 700;
       font-size: 14.5px;
-      color: #fff;
-      background: var(--verde-800);
-      border: none;
+      color: var(--verde-950);
+      background: var(--verde-vivo);
+      border: 1.5px solid var(--verde-vivo-texto);
       border-radius: var(--radio);
       cursor: pointer;
       transition: background .15s ease;
     }
 
-    .btn:hover:not(:disabled) { background: var(--verde-700); }
-    .btn:disabled { background: var(--acero-200); color: var(--acero-500); cursor: not-allowed; }
-    .btn:focus-visible { outline: 2px solid var(--verde-600); outline-offset: 2px; }
+    .btn:hover:not(:disabled) { background: var(--verde-vivo-hover); }
+    .btn:disabled { background: var(--tinta-200); color: var(--tinta-500); cursor: not-allowed; }
+    .btn:focus-visible { outline: 2px solid var(--verde-vivo-texto); outline-offset: 2px; }
 
     .btn-secundario {
       width: 100%;
+      min-height: 44px;
       padding: 11px 16px;
       margin-top: 10px;
-      font-family: var(--font-body);
+      font-family: var(--f-cuerpo);
       font-weight: 600;
       font-size: 14px;
       color: var(--verde-950);
@@ -181,13 +161,15 @@
       border: 1px solid var(--borde);
       border-radius: var(--radio);
       cursor: pointer;
+      transition: background .15s ease;
     }
-    .btn-secundario:hover { background: var(--bg); }
+    .btn-secundario:hover { background: var(--fondo); }
+    .btn-secundario:focus-visible { outline: 2px solid var(--verde-vivo-texto); outline-offset: 2px; }
 
     .mensaje-error {
       display: none;
       background: #FBEAE9;
-      color: var(--peligro);
+      color: var(--error-texto);
       border: 1px solid rgba(167, 41, 31, .2);
       border-radius: var(--radio);
       padding: 10px 12px;
@@ -218,15 +200,13 @@
       animation: girar .7s linear infinite;
     }
 
-    @keyframes girar { to { transform: rotate(360deg); } }
-
     /* ---- Vista bloqueada por saldo ---- */
     .bloqueo-icono {
       width: 48px;
       height: 48px;
       border-radius: 50%;
       background: #FBEAE9;
-      color: var(--peligro);
+      color: var(--error-texto);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -235,7 +215,7 @@
     }
 
     .bloqueo-titulo {
-      font-family: var(--font-display);
+      font-family: var(--f-display);
       font-size: 18px;
       color: var(--verde-950);
       text-align: center;
@@ -244,7 +224,7 @@
 
     .bloqueo-texto {
       font-size: 14px;
-      color: var(--texto-tenue);
+      color: var(--texto-suave);
       text-align: center;
       line-height: 1.6;
       margin: 0 0 4px;
@@ -256,7 +236,7 @@
     }
 
     .notas-header h2 {
-      font-family: var(--font-display);
+      font-family: var(--f-display);
       font-size: 18px;
       color: var(--verde-950);
       margin: 0 0 4px;
@@ -264,7 +244,7 @@
 
     .notas-header p {
       font-size: 13px;
-      color: var(--texto-tenue);
+      color: var(--texto-suave);
       margin: 0;
     }
 
@@ -281,6 +261,14 @@
       margin-top: 8px;
     }
 
+    /* Contiene cualquier desborde a la tabla misma (nunca a toda la
+       página) si algún nombre de materia no encuentra dónde partir. */
+    .tabla-notas-scroll {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
     table.tabla-notas {
       width: 100%;
       border-collapse: collapse;
@@ -292,11 +280,17 @@
       text-align: left;
       border-bottom: 1px solid var(--borde);
       font-size: 13.5px;
+      overflow-wrap: break-word;
+    }
+
+    .tabla-notas td:nth-child(2), .tabla-notas td:nth-child(3),
+    .tabla-notas th:nth-child(2), .tabla-notas th:nth-child(3) {
+      white-space: nowrap;
     }
 
     .tabla-notas th {
-      background: var(--bg);
-      color: var(--acero-700);
+      background: var(--fondo);
+      color: var(--tinta-700);
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: .05em;
@@ -330,12 +324,12 @@
 
     .promedio-final .etiqueta {
       font-size: 13px;
-      color: var(--texto-tenue);
+      color: var(--texto-suave);
       font-weight: 500;
     }
 
     .promedio-final .valor {
-      font-family: var(--font-display);
+      font-family: var(--f-display);
       font-size: 24px;
       font-weight: 700;
       color: var(--verde-950);
@@ -345,20 +339,24 @@
 
     /* ---- Cambiar contraseña ---- */
     .enlace-clave {
-      display: block;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       width: 100%;
+      min-height: 44px;
       background: none;
       border: none;
-      color: var(--acero-500);
+      color: var(--tinta-500);
       font-size: 12.5px;
       text-decoration: underline;
       cursor: pointer;
       text-align: center;
       margin-top: 14px;
       padding: 4px;
-      font-family: var(--font-body);
+      font-family: var(--f-cuerpo);
     }
-    .enlace-clave:hover { color: var(--verde-800); }
+    .enlace-clave:hover { color: var(--verde-vivo-texto); }
+    .enlace-clave:focus-visible { outline: 2px solid var(--verde-vivo-texto); outline-offset: 2px; border-radius: var(--r-xs); }
 
     .panel-clave {
       margin-top: 14px;
@@ -375,8 +373,17 @@
     .pie-nota {
       text-align: center;
       font-size: 12px;
-      color: var(--texto-tenue);
+      color: var(--texto-suave);
       margin-top: 20px;
+    }
+
+    /* En 320-375px cada px de ancho cuenta, sobre todo para la tabla
+       de notas (3 columnas): se libera espacio bajando el padding
+       exterior en vez de reducir el de la tabla. */
+    @media (max-width: 420px) {
+      body { padding: 16px; }
+      .tarjeta { padding: 20px; }
+      .tabla-notas th, .tabla-notas td { padding: 8px 6px; font-size: 12.5px; }
     }
   </style>
 </head>
@@ -386,11 +393,7 @@
   <div class="contenedor">
     <div class="marca">
       <div class="sello">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#EAF3EE" stroke-width="1.4">
-          <path d="M12 2 L21 6.5 V17.5 L12 22 L3 17.5 V6.5 Z" />
-          <path d="M12 22 V12" />
-          <path d="M3 6.5 L12 12 L21 6.5" />
-        </svg>
+        <img src="assets/img/teslavi.jpg" alt="Logo TESLAVI" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;">
       </div>
       <h1>TESLAVI</h1>
       <p>Portal del Estudiante — Mis Notas</p>
@@ -404,7 +407,7 @@
         <form id="formLoginEstudiante" novalidate>
           <div class="campo">
             <label for="ciInput">Carnet de identidad</label>
-            <input type="text" id="ciInput" inputmode="numeric" autocomplete="username" required placeholder="Ej. 10695420">
+            <input type="text" id="ciInput" inputmode="numeric" autocomplete="username" maxlength="15" required placeholder="Ej. 10695420">
           </div>
           <div class="campo">
             <label for="passInput">Contraseña</label>
@@ -420,7 +423,7 @@
 
       <!-- VISTA: BLOQUEADO POR SALDO -->
       <div id="vistaBloqueoEst" class="oculto">
-        <div class="bloqueo-icono">⚠️</div>
+        <div class="bloqueo-icono"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
         <h2 class="bloqueo-titulo">No podés ver tus notas todavía</h2>
         <p class="bloqueo-texto" id="bloqueoNombreEst"></p>
         <p class="bloqueo-texto"><strong>Regularizá tus pagos y pasá por Administración</strong> para ponerte al día y volver a consultar tus notas.</p>
@@ -430,11 +433,11 @@
       <!-- ZONA: CAMBIAR CONTRASEÑA — visible después de iniciar sesión,
            tanto si puede ver notas como si está bloqueado por saldo. -->
       <div id="zonaClaveEst" class="oculto">
-        <button type="button" class="enlace-clave" onclick="window.toggleFormClave()">🔑 Cambiar mi contraseña</button>
+        <button type="button" class="enlace-clave" id="btnToggleClave" aria-expanded="false" aria-controls="panelClaveEst" onclick="window.toggleFormClave()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px; margin-right:3px;" aria-hidden="true"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>Cambiar mi contraseña</button>
         <div id="panelClaveEst" class="panel-clave oculto">
           <h3>Nueva contraseña</h3>
           <div class="mensaje-error" id="mensajeErrorClave" role="alert"></div>
-          <div class="mensaje-exito" id="mensajeExitoClave"></div>
+          <div class="mensaje-exito" id="mensajeExitoClave" role="status" aria-live="polite"></div>
           <div class="campo">
             <label for="claveNueva1">Nueva contraseña</label>
             <input type="password" id="claveNueva1" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
@@ -447,23 +450,34 @@
         </div>
       </div>
 
+
       <!-- VISTA: NOTAS -->
       <div id="vistaNotasEst" class="oculto">
+        <div id="bannerFaltanDatos" class="oculto" style="background:#FFF3E0; color:#D97706; border:1px solid #FCD9A8; padding:12px; border-radius:var(--radio); font-size:13px; margin-bottom:16px; line-height:1.4; display:flex; justify-content:space-between; align-items:center; gap: 12px; flex-wrap: wrap;">
+          <div>
+            <strong>¡Atención!</strong> Te faltan algunos datos personales en el sistema. Pasa por Administración o envíalos por WhatsApp.
+          </div>
+          <a id="btnWhatsappDatos" href="#" target="_blank" class="btn" style="width:auto; min-height:auto; display:inline-flex; align-items:center; padding:8px 12px; background:#25D366; margin:0; font-size: 13px; text-decoration:none;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="margin-right:6px;"><path d="M12.031 0C5.385 0 0 5.388 0 12.035c0 2.124.553 4.195 1.604 6.02L.031 23.996l6.096-1.597A11.96 11.96 0 0 0 12.031 24c6.643 0 12.03-5.388 12.03-12.035C24.06 5.388 18.674 0 12.031 0zM12.031 21.98c-1.802 0-3.565-.483-5.111-1.401l-.367-.217-3.797.995.996-3.702-.238-.379A9.972 9.972 0 0 1 2.02 12.034c0-5.526 4.498-10.024 10.012-10.024 5.514 0 10.01 4.498 10.01 10.024 0 5.526-4.496 10.024-10.01 10.024zm5.5-7.514c-.302-.15-1.786-.882-2.062-.983-.277-.1-.479-.15-.68.151-.202.301-.782.982-.958 1.183-.176.202-.352.227-.654.076-1.353-.68-2.39-1.346-3.21-2.584-.213-.324.21-.303.497-.878.076-.151.038-.277-.038-.427-.076-.151-.68-1.637-.932-2.242-.244-.588-.493-.507-.68-.517-.176-.01-.378-.01-.58-.01-.202 0-.528.076-.805.378-.277.302-1.057 1.033-1.057 2.518 0 1.485 1.082 2.92 1.233 3.12.15.202 2.128 3.247 5.155 4.551 1.956.84 2.658.746 3.16.634.545-.122 1.785-.73 2.037-1.436.252-.705.252-1.31.176-1.436-.076-.126-.277-.202-.58-.352z"/></svg> Enviar mis datos
+          </a>
+        </div>
         <div class="notas-header">
           <h2 id="notasNombreEst">—</h2>
           <p id="notasDatosEst">—</p>
-          <span class="badge-al-dia">✓ Al día con tus pagos</span>
+          <span class="badge-al-dia"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Al día con tus pagos</span>
         </div>
-        <table class="tabla-notas">
-          <thead>
-            <tr>
-              <th>Materia</th>
-              <th style="text-align:center;">Nota</th>
-              <th style="text-align:center;">Estado</th>
-            </tr>
-          </thead>
-          <tbody id="tbodyNotasEst"></tbody>
-        </table>
+        <div class="tabla-notas-scroll">
+          <table class="tabla-notas">
+            <thead>
+              <tr>
+                <th>Materia</th>
+                <th style="text-align:center;">Nota</th>
+                <th style="text-align:center;">Estado</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyNotasEst"></tbody>
+          </table>
+        </div>
         <div class="promedio-final">
           <span class="etiqueta">Promedio final</span>
           <span class="valor" id="promedioFinalEst">—</span>
@@ -678,6 +692,49 @@
           document.getElementById('bloqueoNombreEst').textContent = `${est.apellidos} ${est.nombres} — CI: ${est.ci}`;
           mostrarVista('vistaBloqueoEst');
         } else {
+          // Verificar si faltan datos de contacto
+          let contacto = null;
+          try {
+            const res = await supabaseClient
+              .from('datos_contacto_estudiante')
+              .select('*')
+              .eq('estudiante_id', est.id)
+              .maybeSingle();
+            contacto = res.data;
+          } catch (e) {
+            console.warn("No se pudo obtener datos de contacto por RLS, se asume vacío.", e);
+          }
+          
+          window.estudianteContactoActual = contacto || {};
+          
+          const dir = window.estudianteContactoActual.direccion || '';
+          const correo = window.estudianteContactoActual.correo || '';
+          const telSec = window.estudianteContactoActual.telefono_secundario || '';
+          const telTut = window.estudianteContactoActual.telefono_tutor || '';
+          
+          const faltaDireccion = dir.trim() === '';
+          const faltaCorreo = correo.trim() === '';
+          const faltaCelular = telSec.trim() === '';
+          const faltaTutor = telTut.trim() === '';
+          const tieneUnTelefono = !faltaCelular || !faltaTutor;
+
+          const banner = document.getElementById('bannerFaltanDatos');
+          if (faltaDireccion || faltaCorreo || !tieneUnTelefono) {
+            let mensajeWa = `Hola Administración, soy ${est.nombres} ${est.apellidos}, de ${est.semestre} semestre, turno ${est.turno}. Estos son los datos que me faltan actualizar:%0A`;
+            if (faltaDireccion) mensajeWa += `- Dirección: %0A`;
+            if (faltaCorreo) mensajeWa += `- Correo: %0A`;
+            if (!tieneUnTelefono) mensajeWa += `- Celular / Teléfono: %0A`;
+            
+            const btnWa = document.getElementById('btnWhatsappDatos');
+            if (btnWa) {
+              const numeroWa = (window.cfgTrimestres && window.cfgTrimestres.whatsapp_consultas) ? window.cfgTrimestres.whatsapp_consultas : '60000000';
+              btnWa.href = `https://wa.me/591${numeroWa}?text=${mensajeWa}`;
+            }
+            if (banner) banner.classList.remove('oculto');
+          } else {
+            if (banner) banner.classList.add('oculto');
+          }
+
           renderizarNotas(est);
           mostrarVista('vistaNotasEst');
         }
@@ -690,6 +747,16 @@
         txt.textContent = 'Ver mis notas';
       }
     });
+
+    /* Formato de estudiantes.materias_arrastre: "|COD1@Mañana|COD2@Noche|"
+       (duplicado a propósito, ver comentario de MOTOR DE CALIFICACIÓN). */
+    function parsearArrastre(str) {
+      if (!str) return [];
+      return str.split('|').filter(t => t.trim().length > 0).map(t => {
+        const i = t.indexOf('@');
+        return i === -1 ? { codigo: t, turno: null } : { codigo: t.slice(0, i), turno: t.slice(i + 1) };
+      });
+    }
 
     /* ============================================================
        MOTOR DE CALIFICACIÓN — Trimestres + Recuperatorio
@@ -749,11 +816,11 @@
       let materiasMostrar = planSem ? [...planSem.materias] : [];
 
       if (est.materias_arrastre) {
-        const codigosArrastre = est.materias_arrastre.split('|').filter(c => c.trim().length > 0);
+        const arrastres = parsearArrastre(est.materias_arrastre);
         const todasLasMaterias = planEstudios.flatMap(sem => sem.materias);
-        codigosArrastre.forEach(cod => {
-          const mat = todasLasMaterias.find(m => m.codigo === cod);
-          if (mat) materiasMostrar.push({ ...mat, isArrastre: true });
+        arrastres.forEach(a => {
+          const mat = todasLasMaterias.find(m => m.codigo === a.codigo);
+          if (mat) materiasMostrar.push({ ...mat, isArrastre: true, turnoArrastre: a.turno });
         });
       }
 
@@ -770,14 +837,14 @@
 
         const notaStr = sinEval ? '—' : fmtNum(final);
         const estadoStr = sinEval ? 'Sin evaluar' : (r.aprobado ? 'Aprobado' : 'Reprobado');
-        const bg = sinEval ? 'var(--bg)' : (r.aprobado ? 'var(--verde-100)' : '#FBEAE9');
-        const color = sinEval ? 'var(--texto-tenue)' : (r.aprobado ? 'var(--verde-800)' : 'var(--peligro)');
-        const badgeArrastre = mat.isArrastre ? '<span class="pill pill-arrastre">Arrastre</span>' : '';
+        const bg = sinEval ? 'var(--fondo)' : (r.aprobado ? 'var(--verde-100)' : '#FBEAE9');
+        const color = sinEval ? 'var(--texto-suave)' : (r.aprobado ? 'var(--verde-800)' : 'var(--error-texto)');
+        const badgeArrastre = mat.isArrastre ? `<span class="pill pill-arrastre">Arrastre${mat.turnoArrastre ? ' · ' + mat.turnoArrastre : ''}</span>` : '';
 
         return `
           <tr>
             <td>${mat.nombre}${badgeArrastre}</td>
-            <td style="text-align:center; font-family:var(--font-mono); font-weight:600;">${notaStr}</td>
+            <td style="text-align:center; font-family:var(--f-datos); font-weight:600;">${notaStr}</td>
             <td style="text-align:center;"><span class="pill" style="background:${bg}; color:${color};">${estadoStr}</span></td>
           </tr>
         `;

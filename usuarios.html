@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TESLAVI · Usuarios y Permisos</title>
+  <meta name="description" content="Panel de Usuarios y Permisos — Instituto Tecnológico TESLAVI">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Turret+Road:wght@700;800&display=swap"
+    rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Mismo trío de tokens/base/componentes que index.html y docente.html -->
+  <link rel="stylesheet" href="assets/css/01-tokens.css">
+  <!-- Fase 1: aplicar el tema ANTES del primer render (ver index.html para el
+       porqué de no seguir prefers-color-scheme todavía). -->
+  <script>
+    (function () {
+      try {
+        var guardado = localStorage.getItem('teslavi-tema');
+        document.documentElement.setAttribute('data-tema', guardado === 'oscuro' ? 'oscuro' : 'claro');
+      } catch (e) { /* localStorage bloqueado: se queda en modo claro */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="assets/css/02-base.css">
+  <link rel="stylesheet" href="assets/css/03-componentes.css">
+  <script src="assets/js/01-ui.js"></script>
+
+  <style>
+    a.menu-item { text-decoration: none; }
+
+    /* ============================================================
+       RESPONSIVE — mismo patrón de sidebar deslizable que index.html
+       y docente.html (ver esos archivos para la versión completa).
+       ============================================================ */
+    @media (max-width: 1024px) {
+      .btn-hamburguesa { display: flex; align-items: center; justify-content: center; }
+      .dashboard-layout { position: relative; overflow: hidden; }
+      .sidebar {
+        position: fixed;
+        top: 0; bottom: 0; left: 0;
+        transform: translateX(-100%);
+        z-index: 100;
+        transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+        height: 100%;
+      }
+      .sidebar.abierto { transform: translateX(0); box-shadow: var(--sombra-2); }
+      .topbar { padding: 0 var(--e-4); }
+      .content-area { padding: var(--e-6); }
+    }
+
+    @media (max-width: 768px) {
+      .header-title { font-size: 22px; }
+      .header-desc { font-size: 13px; margin-bottom: 20px; }
+      .materia-table { display: block; overflow-x: auto; white-space: nowrap; }
+      .topbar { height: 56px; }
+    }
+
+    @media (max-width: 480px) {
+      .content-area { padding: 16px 12px; }
+      .header-title { font-size: 19px; }
+      .topbar { padding: 0 12px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="pantallaVerificando" style="min-height:100vh; display:flex; align-items:center; justify-content:center; font-family: var(--f-datos); color: var(--texto-suave);">
+    Verificando sesión…
+  </div>
+
+  <!-- ================= PANEL USUARIOS Y PERMISOS (SPA de una sola página) ================= -->
+  <div id="vistaSistema" style="display: none;">
+    <div class="dashboard-layout">
+      <div class="sidebar-overlay" id="sidebarOverlay" onclick="cerrarSidebar()"></div>
+      <aside class="sidebar" id="sidebarPrincipal">
+        <div class="sidebar-header">
+          <h2 style="margin: 0; font-family: var(--f-display); font-size: 20px;">TESLAVI</h2>
+          <span style="font-size: 12px; color: var(--turquesa-claro); font-family: var(--f-datos);">Usuarios y Permisos</span>
+        </div>
+
+        <div class="sidebar-menu">
+          <a class="menu-item activa" href="index.html"><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5" />
+              <path d="m12 19-7-7 7-7" />
+            </svg>
+            Volver al Panel</a>
+        </div>
+
+        <div class="sidebar-identity"
+          style="flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: var(--e-6); opacity: 0.8;">
+          <div class="sello" style="width: 32px; height: 32px; margin-bottom: 12px;">
+            <img src="assets/img/teslavi.jpg" alt="Logo TESLAVI" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;">
+          </div>
+        </div>
+
+        <div class="sidebar-footer">
+          <button id="btnSalir"
+            style="width: 100%; background: rgba(255,255,255,0.1); color: white; border: none; padding: 10px; border-radius: var(--radio); cursor: pointer; font-weight: 500; transition: background 0.2s;">
+            Cerrar sesión
+          </button>
+        </div>
+      </aside>
+
+      <div class="main-content">
+        <header class="topbar">
+          <button class="btn-hamburguesa" id="btnHamburguesa" onclick="toggleSidebar()" aria-label="Abrir menú">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+          <div id="topbarRuta" style="font-weight: 600; color: var(--tinta-700); flex: 1; margin-left: 8px;">Usuarios y Permisos</div>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div id="topbarAvatar"
+              style="width: 32px; height: 32px; background: var(--verde-vivo); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--verde-950); font-weight: bold; flex-shrink: 0;">
+              A</div>
+            <div>
+              <div id="topbarNombre" style="font-size: 13px; font-weight: 600;">—</div>
+              <div id="labelRol" style="font-size: 11px; color: var(--tinta-500); text-transform: uppercase;"></div>
+            </div>
+          </div>
+        </header>
+
+        <main class="content-area">
+
+          <h1 class="header-title">Usuarios y Permisos</h1>
+          <p class="header-desc">Crear cuentas nuevas (Director, Secretaria, Cajero, Admin...) y elegir qué secciones del menú ve cada rol.</p>
+
+          <div id="usuariosSinAcceso" class="form-card" style="max-width: 700px; display:none;">
+            <div class="form-section-body">
+              <p style="margin:0;">Esta sección es solo para el rol <strong>Admin Total</strong>. Si necesitás una cuenta nueva o cambiar permisos, pedíselo a quien tenga ese rol.</p>
+              <p style="margin:16px 0 0;"><a href="index.html" style="color: var(--verde-vivo-texto); font-weight: 600;">Volver al panel</a></p>
+            </div>
+          </div>
+
+          <div id="usuariosContenido">
+            <!-- Crear usuario -->
+            <div class="form-card" style="max-width: 1100px;">
+              <div class="form-section-header" style="margin-bottom: 16px; border-bottom: 1px solid var(--borde); padding-bottom: 16px;">
+                <h3>Crear cuenta nueva</h3>
+                <p>La persona recibe un correo de confirmación de Supabase antes de poder entrar por primera vez (a menos que hayan desactivado esa confirmación en el proyecto). La contraseña acá es solo la inicial — se la puede cambiar ella misma después.</p>
+              </div>
+              <div class="form-section-body">
+                <div class="form-grid-2">
+                  <div class="campo"><label for="nuGestionNombre">Nombre completo</label><input type="text" id="nuGestionNombre" class="select-css" placeholder="Ej. Rosa Fernández"></div>
+                  <div class="campo"><label for="nuGestionCorreo">Correo</label><input type="email" id="nuGestionCorreo" class="select-css" placeholder="rosa@teslavi.edu.bo"></div>
+                  <div class="campo"><label for="nuGestionPassword">Contraseña inicial</label><input type="text" id="nuGestionPassword" class="select-css" placeholder="Mínimo 6 caracteres"></div>
+                  <div class="campo">
+                    <label for="nuGestionRol">Rol</label>
+                    <select id="nuGestionRol" class="select-css">
+                      <option value="Director">Director</option>
+                      <option value="Secretaria">Secretaria</option>
+                      <option value="Cajero">Cajero</option>
+                      <option value="Admin">Admin</option>
+                      <option value="SuperAdmin">Admin Total</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-actions" style="justify-content:flex-start; gap:12px; flex-wrap:wrap;">
+                  <button type="button" class="btn-ingresar" id="btnCrearUsuario" style="width:auto; padding:12px 24px; margin:0;" onclick="window.crearUsuarioStaff()">Crear cuenta</button>
+                  <div class="mensaje" id="mensajeCrearUsuario" role="alert" style="margin: 0; display: none;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Listado -->
+            <div class="form-card" style="max-width: 1100px;">
+              <div class="form-section-header" style="margin-bottom: 16px; border-bottom: 1px solid var(--borde); padding-bottom: 16px;">
+                <h3>Cuentas existentes</h3>
+              </div>
+              <div class="form-section-body">
+                <div style="border: 1px solid var(--borde); border-radius: var(--radio); overflow: hidden;">
+                  <div class="tabla-scroll-wrap">
+                    <table class="materia-table" style="width: 100%; min-width: 620px; margin: 0;">
+                      <thead>
+                        <tr>
+                          <th>Nombre</th>
+                          <th>Correo</th>
+                          <th style="text-align:center;">Rol</th>
+                          <th style="text-align:center;">Estado</th>
+                          <th style="text-align:center;">Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody id="tbodyUsuarios">
+                        <tr><td colspan="5" class="tabla-vacia"><div class="tabla-vacia-texto">Cargando...</div></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Permisos por rol -->
+            <div class="form-card" style="max-width: 1100px;">
+              <div class="form-section-header" style="margin-bottom: 16px; border-bottom: 1px solid var(--borde); padding-bottom: 16px;">
+                <h3>Permisos por rol — qué ve cada uno en el menú</h3>
+                <p>Admin y Admin Total siempre ven todo (no aparecen acá). Tildá o destildá y guardá — se aplica la próxima vez que esa persona entre al sistema (o si ya está adentro, al recargar la página).</p>
+              </div>
+              <div class="form-section-body">
+                <div style="border: 1px solid var(--borde); border-radius: var(--radio); overflow: hidden;">
+                  <div class="tabla-scroll-wrap">
+                    <table class="materia-table" id="tablaPermisosRol" style="width: 100%; min-width: 900px; margin: 0;">
+                      <thead>
+                        <tr id="filaCabeceraPermisos"><th>Sección</th></tr>
+                      </thead>
+                      <tbody id="tbodyPermisosRol">
+                        <tr><td class="tabla-vacia"><div class="tabla-vacia-texto">Cargando...</div></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div class="form-actions">
+                  <div class="mensaje" id="mensajePermisosRol" role="alert" style="margin: 0; display: none;"></div>
+                  <button type="button" class="btn-ingresar" id="btnGuardarPermisosRol" style="width: auto; padding: 12px 32px; margin: 0;" onclick="window.guardarPermisosRol()">Guardar Permisos</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <script>
+
+    window.onerror = function (message, source, lineno, colno, error) {
+      console.error('Error global:', message, 'en', source + ':' + lineno + ':' + colno, error);
+    };
+
+    /* Misma clave pública (anon key) que index.html/docente.html/estudiante.html
+       — segura de tener visible en el navegador, el acceso real lo controlan
+       las políticas RLS en Supabase. */
+    const SUPABASE_URL = "https://uiehqupijamcjptasqfl.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_aG68lfRUBKhEsYIHKf2t1w_zS8VgyzP";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    function escHtml(s) {
+      return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // Secciones gateadas por permisos_rol — mismo set que SECCIONES_CON_PERMISO
+    // en index.html (§3147 al momento de escribir esto). Si se agrega una
+    // sección nueva al sidebar del panel admin, agregarla acá también.
+    const SECCIONES_CON_PERMISO = ['estudiantes', 'docentes', 'materias', 'admin-academico',
+      'estadisticas', 'centralizador', 'libretas', 'finanzas-dashboard', 'financiero',
+      'cobranza', 'caja', 'reportes-financieros', 'gastos-institucionales'];
+    const ETIQUETA_POR_SECCION = {
+      'estudiantes': 'Estudiantes', 'docentes': 'Docentes', 'materias': 'Materias',
+      'admin-academico': 'Notas y Asistencia', 'estadisticas': 'Estadísticas y Analítica',
+      'centralizador': 'Centralizador', 'libretas': 'Libretas',
+      'finanzas-dashboard': 'Dashboard Financiero', 'financiero': 'Financiero',
+      'cobranza': 'Financiero / Cobranza', 'caja': 'Financiero / Caja',
+      'reportes-financieros': 'Financiero / Reportes',
+      'gastos-institucionales': 'Financiero / Gastos e Ingresos'
+    };
+
+    // =====================================================
+    // SESIÓN — reutiliza la sesión de Supabase Auth ya activa
+    // en el navegador (persiste en localStorage, la misma que
+    // arranca index.html). Si no hay sesión, o el rol no es
+    // SuperAdmin no se corta: se muestra el estado "sin acceso"
+    // ya armado en cargarSeccionUsuarios().
+    // =====================================================
+    async function iniciar() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const { data, error } = await supabaseClient.from('users').select('role, name, activo').eq('id', session.user.id).single();
+      if (error || !data || data.activo === false) {
+        await supabaseClient.auth.signOut();
+        window.location.href = 'index.html';
+        return;
+      }
+
+      window.usuarioActual = { id: session.user.id, rol: data.role, nombre: data.name || 'Usuario' };
+
+      document.getElementById('pantallaVerificando').style.display = 'none';
+      document.getElementById('vistaSistema').style.display = 'block';
+      document.getElementById('topbarNombre').textContent = window.usuarioActual.nombre;
+      document.getElementById('topbarAvatar').textContent = (window.usuarioActual.nombre.trim().charAt(0) || 'U').toUpperCase();
+      document.getElementById('labelRol').textContent = data.role;
+
+      window.cargarSeccionUsuarios();
+    }
+    document.addEventListener('DOMContentLoaded', iniciar);
+
+    document.getElementById('btnSalir').addEventListener('click', async function () {
+      await supabaseClient.auth.signOut();
+      window.location.href = 'index.html';
+    });
+
+    // =====================================================
+    // RESPONSIVE: Toggle del Sidebar en móvil/tablet
+    // =====================================================
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebarPrincipal');
+      const overlay = document.getElementById('sidebarOverlay');
+      if (!sidebar) return;
+      const abierto = sidebar.classList.toggle('abierto');
+      if (overlay) overlay.classList.toggle('visible', abierto);
+    }
+    function cerrarSidebar() {
+      const sidebar = document.getElementById('sidebarPrincipal');
+      const overlay = document.getElementById('sidebarOverlay');
+      if (sidebar) sidebar.classList.remove('abierto');
+      if (overlay) overlay.classList.remove('visible');
+    }
+
+    // ==========================================
+    // USUARIOS Y PERMISOS (solo SuperAdmin)
+    // ==========================================
+    const ROLES_STAFF = ['SuperAdmin', 'Admin', 'Director', 'Secretaria', 'Cajero'];
+    const NOMBRE_ROL = { SuperAdmin: 'Admin Total', Admin: 'Admin', Director: 'Director', Secretaria: 'Secretaria', Cajero: 'Cajero' };
+    // Roles a los que se les puede tocar la grilla de permisos —
+    // Admin/SuperAdmin quedan afuera porque siempre ven todo.
+    const ROLES_CON_PERMISOS_EDITABLES = ['Director', 'Secretaria', 'Cajero'];
+
+    window.usuariosCache = [];
+    window.permisosRolCache = {}; // { rol: Set(secciones) }
+
+    window.cargarSeccionUsuarios = async function () {
+      const esSuperAdmin = window.usuarioActual?.rol === 'SuperAdmin';
+      document.getElementById('usuariosSinAcceso').style.display = esSuperAdmin ? 'none' : 'block';
+      document.getElementById('usuariosContenido').style.display = esSuperAdmin ? '' : 'none';
+      if (!esSuperAdmin) return;
+
+      await Promise.all([window.cargarListaUsuarios(), window.cargarGrillaPermisos()]);
+    };
+
+    window.cargarListaUsuarios = async function () {
+      const tbody = document.getElementById('tbodyUsuarios');
+      tbody.innerHTML = '<tr><td colspan="5" class="tabla-vacia"><div class="tabla-vacia-texto">Cargando...</div></td></tr>';
+
+      const { data, error } = await supabaseClient.from('users').select('id, name, email, role, activo').order('name', { ascending: true });
+      if (error) {
+        tbody.innerHTML = `<tr><td colspan="5" class="tabla-vacia" style="color:var(--error-texto);">Error al cargar: ${error.message}</td></tr>`;
+        return;
+      }
+      window.usuariosCache = data || [];
+      window.renderizarListaUsuarios();
+    };
+
+    window.renderizarListaUsuarios = function () {
+      const tbody = document.getElementById('tbodyUsuarios');
+      const lista = window.usuariosCache;
+      if (lista.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="tabla-vacia"><div class="tabla-vacia-texto">No hay usuarios todavía.</div></td></tr>';
+        return;
+      }
+      tbody.innerHTML = lista.map(u => {
+        const rolActualEsValido = ROLES_STAFF.includes(u.role);
+        const opciones = ROLES_STAFF.map(r => `<option value="${r}" ${u.role === r ? 'selected' : ''}>${NOMBRE_ROL[r]}</option>`).join('');
+        const soyYo = u.id === window.usuarioActual?.id;
+        return `
+          <tr>
+            <td style="font-weight:600;">${escHtml(u.name || '—')}${soyYo ? ' <span style="font-weight:400; color:var(--texto-suave); font-size:11px;">(vos)</span>' : ''}</td>
+            <td style="font-family:var(--f-datos); font-size:12.5px;">${escHtml(u.email || '—')}</td>
+            <td style="text-align:center;">
+              <select class="select-css" style="padding:6px 8px; font-size:12.5px;" id="rolUsuario_${u.id}" ${soyYo ? 'disabled' : ''}>
+                ${rolActualEsValido ? opciones : `<option value="${u.role}" selected>${escHtml(u.role)} (rol viejo)</option>` + opciones}
+              </select>
+            </td>
+            <td style="text-align:center;">${u.activo === false ? '<span class="materia-badge" style="background:var(--error-bg); color:var(--error-texto);">Inactivo</span>' : '<span class="materia-badge" style="background:var(--ok-bg); color:var(--ok-texto);">Activo</span>'}</td>
+            <td style="text-align:center; white-space:nowrap;">
+              <button type="button" class="btn-secundario" style="padding:6px 12px; margin:0 4px 0 0;" ${soyYo ? 'disabled' : ''} onclick="window.guardarRolUsuario('${u.id}')">Guardar rol</button>
+              <button type="button" class="btn-secundario" style="padding:6px 12px; margin:0;" ${soyYo ? 'disabled' : ''} onclick="window.alternarActivoUsuario('${u.id}', ${u.activo !== false})">${u.activo === false ? 'Activar' : 'Desactivar'}</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    };
+
+    window.guardarRolUsuario = async function (userId) {
+      const sel = document.getElementById(`rolUsuario_${userId}`);
+      if (!sel) return;
+      const nuevoRol = sel.value;
+      const { error } = await supabaseClient.from('users').update({ role: nuevoRol }).eq('id', userId);
+      if (error) { window.toast('Error al guardar el rol: ' + error.message, 'error'); return; }
+      window.toast('Rol actualizado.', 'exito');
+      await window.cargarListaUsuarios();
+    };
+
+    window.alternarActivoUsuario = async function (userId, estaActivo) {
+      const accion = estaActivo ? 'desactivar' : 'activar';
+      const ok = await window.confirmarAccion({
+        titulo: estaActivo ? 'Desactivar cuenta' : 'Activar cuenta',
+        cuerpo: estaActivo
+          ? 'La persona no va a poder iniciar sesión hasta que se reactive la cuenta. No se borra nada.'
+          : 'La persona va a poder volver a iniciar sesión con su correo y contraseña de siempre.',
+        textoConfirmar: estaActivo ? 'Desactivar' : 'Activar',
+        peligro: estaActivo
+      });
+      if (!ok) return;
+      const { error } = await supabaseClient.from('users').update({ activo: !estaActivo }).eq('id', userId);
+      if (error) { window.toast('Error: ' + error.message, 'error'); return; }
+      window.toast(`Cuenta ${accion === 'desactivar' ? 'desactivada' : 'activada'}.`, 'exito');
+      await window.cargarListaUsuarios();
+    };
+
+    /* Crear un usuario real de Supabase Auth desde el panel, sin tener
+       backend propio ni service role key: se usa un cliente de Supabase
+       SEPARADO y descartable (persistSession:false) solo para llamar
+       signUp() — así la sesión nueva que arma internamente no pisa la
+       sesión del SuperAdmin que está logueado en supabaseClient (el
+       cliente principal de toda la página). Con eso ya queda creado el
+       usuario en auth.users + auth.identities de la forma soportada por
+       Supabase; después se le agrega la fila en public.users con su rol.
+       Si el proyecto tiene "Confirmar correo" activado, la persona va a
+       necesitar click en el mail de confirmación antes de poder entrar. */
+    window.crearUsuarioStaff = async function () {
+      const btn = document.getElementById('btnCrearUsuario');
+      const msg = document.getElementById('mensajeCrearUsuario');
+      const nombre = document.getElementById('nuGestionNombre').value.trim();
+      const correo = document.getElementById('nuGestionCorreo').value.trim();
+      const password = document.getElementById('nuGestionPassword').value;
+      const rol = document.getElementById('nuGestionRol').value;
+
+      if (!nombre || !correo || !password || password.length < 6) {
+        msg.className = 'mensaje error visible';
+        msg.textContent = 'Completá nombre, correo y una contraseña de al menos 6 caracteres.';
+        return;
+      }
+
+      btn.disabled = true;
+      msg.className = 'mensaje visible';
+      msg.style.background = 'var(--fondo)';
+      msg.style.color = 'var(--texto-suave)';
+      msg.textContent = 'Creando cuenta...';
+      try {
+        const clienteTemporal = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+          auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+        });
+        const { data: signUpData, error: signUpError } = await clienteTemporal.auth.signUp({ email: correo, password });
+        if (signUpError) throw signUpError;
+        if (!signUpData.user) throw new Error('No se pudo crear el usuario (respuesta inesperada de Supabase).');
+
+        const { error: insertError } = await supabaseClient.from('users').insert({
+          id: signUpData.user.id, name: nombre, email: correo, role: rol
+        });
+        if (insertError) throw insertError;
+
+        msg.className = 'mensaje visible';
+        msg.style.background = '#E4EFE9';
+        msg.style.color = 'var(--verde-800)';
+        msg.textContent = signUpData.session
+          ? `Cuenta creada — ${nombre} ya puede iniciar sesión.`
+          : `Cuenta creada — le va a llegar un correo de confirmación a ${correo} antes de poder entrar.`;
+        setTimeout(() => msg.classList.remove('visible'), 8000);
+
+        document.getElementById('nuGestionNombre').value = '';
+        document.getElementById('nuGestionCorreo').value = '';
+        document.getElementById('nuGestionPassword').value = '';
+        await window.cargarListaUsuarios();
+      } catch (err) {
+        console.error(err);
+        msg.className = 'mensaje error visible';
+        msg.textContent = 'Error al crear la cuenta: ' + (err.message || 'desconocido');
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    window.cargarGrillaPermisos = async function () {
+      const { data, error } = await supabaseClient.from('permisos_rol').select('rol, seccion');
+      window.permisosRolCache = {};
+      ROLES_CON_PERMISOS_EDITABLES.forEach(r => { window.permisosRolCache[r] = new Set(); });
+      if (!error) {
+        (data || []).forEach(p => {
+          if (!window.permisosRolCache[p.rol]) window.permisosRolCache[p.rol] = new Set();
+          window.permisosRolCache[p.rol].add(p.seccion);
+        });
+      }
+      window.renderizarGrillaPermisos();
+    };
+
+    window.renderizarGrillaPermisos = function () {
+      const cabecera = document.getElementById('filaCabeceraPermisos');
+      const tbody = document.getElementById('tbodyPermisosRol');
+      cabecera.innerHTML = '<th>Sección</th>' + ROLES_CON_PERMISOS_EDITABLES.map(r => `<th style="text-align:center;">${NOMBRE_ROL[r]}</th>`).join('');
+      tbody.innerHTML = SECCIONES_CON_PERMISO.map(clave => {
+        const etiqueta = ETIQUETA_POR_SECCION[clave] || clave;
+        const celdas = ROLES_CON_PERMISOS_EDITABLES.map(r => {
+          const marcado = window.permisosRolCache[r] && window.permisosRolCache[r].has(clave);
+          return `<td style="text-align:center;"><input type="checkbox" class="cb-permiso" data-rol="${r}" data-seccion="${clave}" ${marcado ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;"></td>`;
+        }).join('');
+        return `<tr><td style="font-weight:500;">${escHtml(etiqueta)}</td>${celdas}</tr>`;
+      }).join('');
+    };
+
+    window.guardarPermisosRol = async function () {
+      const btn = document.getElementById('btnGuardarPermisosRol');
+      const msg = document.getElementById('mensajePermisosRol');
+      btn.disabled = true;
+      try {
+        const { data: userData } = await supabaseClient.auth.getUser();
+        const marcados = [];
+        document.querySelectorAll('#tbodyPermisosRol .cb-permiso:checked').forEach(cb => {
+          marcados.push({ rol: cb.dataset.rol, seccion: cb.dataset.seccion, actualizado_por: userData?.user?.id || null });
+        });
+
+        // Reemplazo simple: borrar los permisos actuales de estos roles
+        // y volver a insertar los que quedaron tildados.
+        const { error: delError } = await supabaseClient.from('permisos_rol').delete().in('rol', ROLES_CON_PERMISOS_EDITABLES);
+        if (delError) throw delError;
+        if (marcados.length > 0) {
+          const { error: insError } = await supabaseClient.from('permisos_rol').insert(marcados);
+          if (insError) throw insError;
+        }
+
+        msg.className = 'mensaje visible';
+        msg.style.background = '#E4EFE9';
+        msg.style.color = 'var(--verde-800)';
+        msg.textContent = 'Permisos guardados.';
+        setTimeout(() => msg.classList.remove('visible'), 4000);
+        await window.cargarGrillaPermisos();
+      } catch (err) {
+        console.error(err);
+        msg.className = 'mensaje error visible';
+        msg.textContent = 'Error al guardar: ' + err.message;
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+  </script>
+</body>
+
+</html>
