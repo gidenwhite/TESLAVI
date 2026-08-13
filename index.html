@@ -1572,6 +1572,37 @@
               </div>
             </div>
 
+            <div class="filtro-card" style="margin-bottom: var(--e-6);">
+              <div style="flex: 2; min-width: 220px;">
+                <label for="buscarAdminAcademico" style="font-size: 13px; font-weight: 500; color: var(--tinta-700); display: block; margin-bottom: 6px;">Buscar por materia, código o docente</label>
+                <div class="campo-buscar">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <input type="text" id="buscarAdminAcademico" class="select-css" placeholder="Ej. Motores, MOG 100 o García" oninput="window.renderizarAdminAcademico()">
+                </div>
+              </div>
+              <div style="flex: 1; min-width: 180px;">
+                <label for="filtroSemestreAdminAcademico" style="font-size: 13px; font-weight: 500; color: var(--tinta-700); display: block; margin-bottom: 6px;">Semestre</label>
+                <select id="filtroSemestreAdminAcademico" class="select-css" onchange="window.renderizarAdminAcademico()">
+                  <option value="Todos">Todos los semestres</option>
+                  <option value="1">Primer Semestre</option>
+                  <option value="2">Segundo Semestre</option>
+                  <option value="3">Tercer Semestre</option>
+                  <option value="4">Cuarto Semestre</option>
+                  <option value="5">Quinto Semestre</option>
+                  <option value="6">Sexto Semestre</option>
+                </select>
+              </div>
+              <div style="flex: 1; min-width: 150px;">
+                <label for="filtroTurnoAdminAcademico" style="font-size: 13px; font-weight: 500; color: var(--tinta-700); display: block; margin-bottom: 6px;">Turno</label>
+                <select id="filtroTurnoAdminAcademico" class="select-css" onchange="window.renderizarAdminAcademico()">
+                  <option value="Todos">Todos los turnos</option>
+                  <option value="Mañana">Mañana</option>
+                  <option value="Noche">Noche</option>
+                </select>
+              </div>
+            </div>
+            <div id="adminAcademicoConteo" style="font-size: 12.5px; color: var(--texto-suave); margin-bottom: 12px;"></div>
+
             <div id="contenedorAdminAcademico" class="form-grid-2"></div>
           </div>
 
@@ -2350,9 +2381,10 @@
                       </table>
                     </div>
                   </div>
-                  <div class="form-actions">
-                    <div class="mensaje" id="mensajeFechasCuotas" role="alert" style="margin: 0; display: none;"></div>
+                  <div class="form-actions" style="justify-content:flex-start; gap:12px; flex-wrap:wrap;">
                     <button type="button" class="btn-ingresar" id="btnGuardarFechasCuotas" style="width: auto; padding: 12px 32px; margin: 0;" onclick="window.guardarFechasCuotas()">Guardar Fechas de Cuotas</button>
+                    <button type="button" class="btn-ingresar" style="width: auto; padding: 12px 24px; margin: 0; background:#1976D2;" onclick="window.resincronizarFechasCuotas()" title="Los estudiantes que ya tenían cuotas generadas ANTES de este cambio se quedaron con la fecha vieja — este botón las actualiza a lo que está guardado arriba.">Actualizar fechas de cuotas existentes</button>
+                    <div class="mensaje" id="mensajeFechasCuotas" role="alert" style="margin: 0; display: none;"></div>
                   </div>
 
                   <div class="form-section-header" style="margin: 24px 0 16px; border-bottom: 1px solid var(--borde); padding-bottom: 16px;">
@@ -2415,24 +2447,29 @@
             <h1 class="header-title">Cobranza</h1>
             <p class="header-desc">Estudiantes con cuotas pendientes, fuera de plazo o en mora.</p>
 
-            <!-- Banner informativo: el plazo de cada cuota ahora se
-                 configura por cuota/turno (Financiero → Configuración),
-                 ya no es una regla fija de "todos pagan del 1 al 10". -->
+            <!-- Banner informativo: el plazo de cada cuota se configura por
+                 cuota/turno (Financiero → Configuración → "Fechas de pago de
+                 cada cuota, por turno"). Las 4 pestañas de abajo se arman con
+                 esas fechas + el estado_financiero que ya calcula la base de
+                 datos (AL_DIA/ATRASADO/MOROSO) en cada pago/plan nuevo — no
+                 hay una regla aparte que se pueda desincronizar. -->
             <div id="cobranzaBannerPlazo" style="margin-bottom:20px; padding:14px 18px; border-radius:var(--r-md); border:1px solid var(--borde); display:flex; align-items:center; gap:10px; font-size:13.5px; line-height:1.5;"></div>
 
             <div class="tabs-container" id="tabsCobranza">
-              <button class="tab-btn" data-filtro="por_vencer" onclick="window.filtrarCobranza('por_vencer', this)">Por vencer</button>
-              <button class="tab-btn active" data-filtro="fuera_plazo" onclick="window.filtrarCobranza('fuera_plazo', this)">Fuera de plazo</button>
-              <button class="tab-btn" data-filtro="morosos" onclick="window.filtrarCobranza('morosos', this)">Morosos</button>
-              <button class="tab-btn" data-filtro="todos" onclick="window.filtrarCobranza('todos', this)">Todos (con saldo)</button>
+              <button class="tab-btn" data-filtro="con_saldo" onclick="window.filtrarCobranza('con_saldo', this)" title="Todavía no llega la fecha en que se puede empezar a cobrar esa cuota.">Con saldo (aún no vence)</button>
+              <button class="tab-btn" data-filtro="por_vencer" onclick="window.filtrarCobranza('por_vencer', this)" title="Ya se puede cobrar esa cuota (está dentro de su rango Desde–Hasta) y todavía no está vencida.">Por vencer</button>
+              <button class="tab-btn active" data-filtro="fuera_plazo" onclick="window.filtrarCobranza('fuera_plazo', this)" title="Debe exactamente una cuota vencida (estado ATRASADO).">Fuera de plazo</button>
+              <button class="tab-btn" data-filtro="morosos" onclick="window.filtrarCobranza('morosos', this)" title="Debe 2 o más cuotas vencidas, o lleva 30+ días de mora en alguna (estado MOROSO).">Morosos</button>
             </div>
 
             <div style="border: 1px solid var(--borde); border-radius: var(--radio); overflow: hidden; background:#fff;">
               <div class="tabla-scroll-wrap">
-              <table class="materia-table" style="width: 100%; min-width: 920px; margin: 0;">
+              <table class="materia-table" style="width: 100%; min-width: 1050px; margin: 0;">
                 <thead>
                   <tr>
                     <th>Estudiante</th>
+                    <th style="text-align:center;">Semestre</th>
+                    <th style="text-align:center;">Turno</th>
                     <th>CI</th>
                     <th>Celular</th>
                     <th style="text-align:right;">Saldo pendiente</th>
@@ -2443,7 +2480,7 @@
                   </tr>
                 </thead>
                 <tbody id="tbodyCobranza">
-                  <tr><td colspan="8" style="text-align:center; color:var(--texto-suave); padding:24px 0;">Cargando...</td></tr>
+                  <tr><td colspan="10" style="text-align:center; color:var(--texto-suave); padding:24px 0;">Cargando...</td></tr>
                 </tbody>
               </table>
               </div>
@@ -4910,6 +4947,41 @@
       }
     };
 
+    /* Las cuotas que ya existían ANTES de este cambio quedaron con la
+       fecha vieja grabada (fecha_vencimiento se graba una sola vez, al
+       crear la cuota — ver 019_resincronizar_fechas_cuotas.sql). Este
+       botón las pone al día con lo que está guardado arriba, para
+       cuotas activas y sin pagar. Requiere haber corrido esa migración
+       en Supabase. */
+    window.resincronizarFechasCuotas = async function() {
+      const msg = document.getElementById('mensajeFechasCuotas');
+      const ok = await window.confirmarAccion({
+        titulo: 'Actualizar fechas de cuotas existentes',
+        cuerpo: 'Esto pisa la fecha de vencimiento de las cuotas ACTIVAS y SIN PAGAR de todos los estudiantes con la fecha "Hasta" que está guardada arriba para su cuota/turno. No toca cuotas ya pagadas ni de gestiones cerradas. ¿Confirmás?',
+        textoConfirmar: 'Actualizar fechas',
+        peligro: true
+      });
+      if (!ok) return;
+
+      msg.className = 'mensaje visible';
+      msg.style.background = 'var(--fondo)';
+      msg.style.color = 'var(--texto-suave)';
+      msg.textContent = 'Actualizando fechas de cuotas...';
+      try {
+        const { data, error } = await supabaseClient.rpc('resincronizar_fechas_cuotas');
+        if (error) throw error;
+        msg.className = 'mensaje visible';
+        msg.style.background = '#E4EFE9';
+        msg.style.color = 'var(--verde-800)';
+        msg.textContent = `Listo: se actualizaron ${data} cuota(s). Volvé a cargar Cobranza para ver los cambios reflejados.`;
+        setTimeout(() => msg.classList.remove('visible'), 8000);
+      } catch (err) {
+        console.error(err);
+        msg.className = 'mensaje error visible';
+        msg.textContent = 'Error: ' + (err.message || 'no se pudo resincronizar. ¿Corriste la migración 019 en Supabase?');
+      }
+    };
+
     window.cerrarGestionActual = async function() {
       const msg = document.getElementById('mensajeCerrarGestion');
       const cfg = window.configFinancieroDefault || {};
@@ -5944,42 +6016,66 @@
       banner.style.background = 'var(--info-bg)';
       banner.style.borderColor = 'var(--info-borde)';
       banner.style.color = 'var(--info-texto)';
-      banner.innerHTML = ICONO_RELOJ + '<span>El plazo de pago varía por cuota y turno (configurado en Financiero → Configuración). Fijate el vencimiento de cada estudiante en la tabla de abajo.</span>';
+      banner.innerHTML = ICONO_RELOJ + '<span><strong>Con saldo:</strong> todavía no abre la fecha de cobro. <strong>Por vencer:</strong> está en el rango Desde–Hasta configurado, sin vencer. <strong>Fuera de plazo:</strong> debe una sola cuota vencida. <strong>Morosos:</strong> debe 2+ cuotas o 30+ días de mora. Los rangos se configuran en Financiero → Configuración.</span>';
     };
 
     window.cargarCobranza = async function() {
       window.renderizarBannerPlazoCobranza();
       const tbody = document.getElementById('tbodyCobranza');
-      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--texto-suave); padding:24px 0;">Cargando...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; color:var(--texto-suave); padding:24px 0;">Cargando...</td></tr>`;
 
-      const [{ data: cuotas, error: errC }, { data: estudiantes, error: errE }] = await Promise.all([
+      const [{ data: cuotas, error: errC }, { data: estudiantes, error: errE }, { data: fechasCuotas, error: errF }] = await Promise.all([
         supabaseClient.from('vista_cuotas_estado').select('*').eq('estado_plan', 'activo').gt('saldo_cuota', 0).order('fecha_vencimiento', { ascending: true }),
-        supabaseClient.from('estudiantes').select('id, nombres, apellidos, ci, celular, celular_apoderado, estado_financiero')
+        supabaseClient.from('estudiantes').select('id, nombres, apellidos, ci, celular, celular_apoderado, estado_financiero, semestre, turno'),
+        supabaseClient.from('config_fechas_cuotas').select('turno, numero_cuota, fecha_inicio, fecha_fin')
       ]);
 
       if (errC || errE) {
         console.error(errC || errE);
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--error-texto); padding:24px 0;">Error al cargar cobranza.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; color:var(--error-texto); padding:24px 0;">Error al cargar cobranza.</td></tr>`;
         return;
       }
+      if (errF) console.warn('No se pudo cargar config_fechas_cuotas (se usa para separar "Con saldo" de "Por vencer"):', errF);
 
       const estMap = new Map(estudiantes.map(e => [e.id, e]));
+      const fechasMap = new Map((fechasCuotas || []).map(f => [`${f.turno}_${f.numero_cuota}`, f]));
 
       const agregados = new Map();
       cuotas.forEach(c => {
         const est = estMap.get(c.estudiante_id);
         if (!est) return;
         if (!agregados.has(c.estudiante_id)) {
-          agregados.set(c.estudiante_id, { estudiante: est, saldoTotal: 0, cuotasVencidas: 0, saldoActual: null, proximaFecha: null });
+          agregados.set(c.estudiante_id, {
+            estudiante: est, saldoTotal: 0, cuotasVencidas: 0, saldoActual: null, proximaFecha: null,
+            cuotaActualFechaInicio: null
+          });
         }
         const a = agregados.get(c.estudiante_id);
         a.saldoTotal += Number(c.saldo_cuota);
-        if (c.estado_cuota === 'vencido' || c.estado_cuota === 'parcial_vencido') a.cuotasVencidas += 1;
+        const esVencida = (c.estado_cuota === 'vencido' || c.estado_cuota === 'parcial_vencido');
+        if (esVencida) a.cuotasVencidas += 1;
         // la primera cuota pendiente que aparece (gracias al order por fecha) es la más próxima: "lo que debe este mes"
         if (a.saldoActual === null) { a.saldoActual = Number(c.saldo_cuota); a.proximaFecha = c.fecha_vencimiento; }
+        // La primera cuota NO vencida (todavía pendiente/parcial) es la que decide si
+        // el estudiante está "Con saldo" (ventana de cobro sin abrir) o "Por vencer"
+        // (ya se puede cobrar) — se busca su fecha_inicio en config_fechas_cuotas.
+        if (!esVencida && a.cuotaActualFechaInicio === null) {
+          const cfg = fechasMap.get(`${est.turno}_${c.numero_cuota}`);
+          a.cuotaActualFechaInicio = cfg ? cfg.fecha_inicio : 'sin_config';
+        }
       });
 
-      window.cobranzaCache = Array.from(agregados.values());
+      const lista = Array.from(agregados.values());
+      // Organizado por semestre → turno → apellido, para leer más fácil.
+      lista.sort((x, y) => {
+        const s = (Number(x.estudiante.semestre) || 0) - (Number(y.estudiante.semestre) || 0);
+        if (s !== 0) return s;
+        const t = (x.estudiante.turno || '').localeCompare(y.estudiante.turno || '');
+        if (t !== 0) return t;
+        return (x.estudiante.apellidos || '').localeCompare(y.estudiante.apellidos || '');
+      });
+
+      window.cobranzaCache = lista;
       window.renderizarCobranza();
     };
 
@@ -5996,18 +6092,31 @@
       let lista = window.cobranzaCache || [];
 
       const MENSAJE_VACIO = {
+        con_saldo: 'Nadie tiene saldo pendiente todavía sin fecha de cobro abierta.',
         por_vencer: 'Nadie tiene cuotas por vencer en este momento.',
         fuera_plazo: 'Nadie está fuera de plazo por ahora.',
-        morosos: 'No hay estudiantes morosos.',
-        todos: 'No hay estudiantes con saldo pendiente.'
+        morosos: 'No hay estudiantes morosos.'
       };
 
-      if (filtro === 'por_vencer') lista = lista.filter(a => a.cuotasVencidas === 0);
-      else if (filtro === 'fuera_plazo') lista = lista.filter(a => a.cuotasVencidas > 0);
+      // "Con saldo" y "Por vencer" son AL_DIA (0 cuotas vencidas) — se separan
+      // según si hoy ya entró al rango Desde–Hasta configurado para su próxima
+      // cuota, o todavía no. "Fuera de plazo" y "Morosos" reusan el
+      // estado_financiero que la base de datos ya recalcula solo en cada pago
+      // o plan nuevo (ver recalcular_estado_financiero_estudiante), así estas
+      // pestañas nunca quedan desincronizadas del resto del sistema.
+      // Fecha local (no UTC): toISOString() se adelanta un día durante la
+      // noche en Bolivia (UTC-4) y abriría la ventana de cobro antes de tiempo.
+      const hoy0 = new Date(); hoy0.setHours(0, 0, 0, 0);
+      const hoyStr = hoy0.getFullYear() + '-' + String(hoy0.getMonth() + 1).padStart(2, '0') + '-' + String(hoy0.getDate()).padStart(2, '0');
+      const ventanaAunNoAbre = a => a.cuotaActualFechaInicio && a.cuotaActualFechaInicio !== 'sin_config' && hoyStr < a.cuotaActualFechaInicio;
+
+      if (filtro === 'con_saldo') lista = lista.filter(a => a.estudiante.estado_financiero === 'AL_DIA' && ventanaAunNoAbre(a));
+      else if (filtro === 'por_vencer') lista = lista.filter(a => a.estudiante.estado_financiero === 'AL_DIA' && !ventanaAunNoAbre(a));
+      else if (filtro === 'fuera_plazo') lista = lista.filter(a => a.estudiante.estado_financiero === 'ATRASADO');
       else if (filtro === 'morosos') lista = lista.filter(a => a.estudiante.estado_financiero === 'MOROSO');
 
       if (lista.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="tabla-vacia"><div class="tabla-vacia-icono" style="color:var(--verde-500);">${ICONO_CHECK_CIRCULO}</div><div class="tabla-vacia-texto">${MENSAJE_VACIO[filtro] || 'Sin resultados.'}</div></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" class="tabla-vacia"><div class="tabla-vacia-icono" style="color:var(--verde-500);">${ICONO_CHECK_CIRCULO}</div><div class="tabla-vacia-texto">${MENSAJE_VACIO[filtro] || 'Sin resultados.'}</div></td></tr>`;
         return;
       }
 
@@ -6029,6 +6138,8 @@
         return `
           <tr>
             <td style="font-weight:600;">${est.apellidos} ${est.nombres}</td>
+            <td style="text-align:center;">${est.semestre ? est.semestre + '°' : '—'}</td>
+            <td style="text-align:center;">${est.turno || '—'}</td>
             <td><span class="materia-badge">${est.ci}</span></td>
             <td>${est.celular || '—'}</td>
             <td style="text-align:right; font-weight:600; color:var(--error-texto);">${bs(a.saldoTotal)}</td>
@@ -7651,6 +7762,8 @@
     }
     window.exportarWordDocentes = exportarWordDocentes;
 
+    window.adminAcademicoCache = [];
+
     window.cargarAdminAcademico = async function () {
       const contenedor = document.getElementById("contenedorAdminAcademico");
       if (!contenedor) return;
@@ -7668,8 +7781,7 @@
         const docentesData = resDoc.data || [];
         if (!window.cfgTrimestres) await window.cargarConfigTrimestres();
 
-        const esAdmin = (window.usuarioActual?.rol === 'Administrador' || window.usuarioActual?.rol === 'ADMIN' || window.usuarioActual?.rol === 'SuperAdmin');
-        let html = "";
+        const items = [];
 
         planEstudios.forEach(semestre => {
           let idSemestre = "1";
@@ -7678,11 +7790,6 @@
           if (semestre.semestre.includes("Cuarto")) idSemestre = "4";
           if (semestre.semestre.includes("Quinto")) idSemestre = "5";
           if (semestre.semestre.includes("Sexto")) idSemestre = "6";
-
-          // Título del semestre
-          html += `<div style="grid-column: 1 / -1; margin-top: 24px; margin-bottom: 8px; border-bottom: 1px solid var(--borde); padding-bottom: 8px;">
-                   <h2 style="font-family: var(--f-display); color: var(--verde-950); font-size: 18px; margin: 0;">${semestre.semestre}</h2>
-                 </div>`;
 
           semestre.materias.forEach(mat => {
             ['Mañana', 'Noche'].forEach(turno => {
@@ -7709,51 +7816,105 @@
                 if (r.notaFinal >= 61) aprobados++; else reprobados++;
               });
 
-              // Color del badge del profesor
-              const colorDocente = docenteAsignado === "Sin Asignar" ? "color: var(--error-texto); font-style: italic;" : "color: var(--verde-700); font-weight: 500;";
-
-              html += `
-              <div class="card" style="display:flex; flex-direction:column; justify-content:space-between; border-radius: var(--radio); box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                <div>
-                  <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
-                    <span class="materia-badge codigo-materia" style="font-size: 11px;">${mat.codigo}</span>
-                    <span style="font-size: 11px; font-weight: 600; padding: 4px 8px; background: var(--verde-50); color: var(--verde-800); border-radius: 4px;">Turno ${turno}</span>
-                  </div>
-                  <h3 style="margin: 0 0 4px; font-family: var(--f-display); color: var(--verde-950); font-size: 16px; line-height: 1.2;">${mat.nombre}</h3>
-                  <div style="margin-bottom: 12px; font-size: 12.5px;">
-                    <span style="color: var(--texto-suave);">Docente:</span> 
-                    <span style="${colorDocente}">${docenteAsignado}</span>
-                  </div>
-                  
-                  <div style="background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); padding: 10px; margin-bottom: 16px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px;">
-                      <span style="color: var(--texto-suave);">Estudiantes inscritos:</span>
-                      <strong style="color: var(--texto);">${totalEst}</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px;">
-                      <span style="color: var(--texto-suave);">Aprobados (>= 61):</span>
-                      <strong style="color: var(--verde-700);">${aprobados}</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-size: 12px;">
-                      <span style="color: var(--texto-suave);">Reprobados (< 61):</span>
-                      <strong style="color: var(--error-texto);">${reprobados}</strong>
-                    </div>
-                  </div>
-                </div>
-                <div style="display:flex; gap: 6px; flex-wrap: wrap;">
-                  <button onclick="window.abrirVisorCalificacionesAdmin('${mat.codigo}', '${mat.nombre}', '${turno}', '${idSemestre}')" class="btn-secundario" style="flex:1; padding: 6px; font-size: 12px;">Ver Notas</button>
-                  <button onclick="window.abrirVisorAsistenciaAdmin('${mat.codigo}', '${mat.nombre}', '${turno}', '${idSemestre}')" class="btn-secundario" style="flex:1; padding: 6px; font-size: 12px;">Auditar Asistencia</button>
-                </div>
-              </div>`;
+              items.push({
+                semestreNombre: semestre.semestre, idSemestre,
+                codigo: mat.codigo, nombre: mat.nombre, turno,
+                docente: docenteAsignado, totalEst, aprobados, reprobados
+              });
             });
           });
         });
 
-        if (html === "") { contenedor.innerHTML = "<h1 style='color:red'>HTML ESTA VACIO</h1>"; }
-        else { contenedor.innerHTML = html; }
+        window.adminAcademicoCache = items;
+        window.renderizarAdminAcademico();
       } catch (err) {
         contenedor.innerHTML = '<div style="padding:20px; color:red;">ERROR CRITICO: ' + err.message + ' <br>' + err.stack + '</div>';
       }
+    };
+
+    window.renderizarAdminAcademico = function () {
+      const contenedor = document.getElementById("contenedorAdminAcademico");
+      const conteo = document.getElementById("adminAcademicoConteo");
+      if (!contenedor) return;
+
+      const base = window.adminAcademicoCache || [];
+      const q = (document.getElementById('buscarAdminAcademico')?.value || '').toLowerCase().trim();
+      const semFiltro = document.getElementById('filtroSemestreAdminAcademico')?.value || 'Todos';
+      const turnoFiltro = document.getElementById('filtroTurnoAdminAcademico')?.value || 'Todos';
+
+      let data = base;
+      if (semFiltro !== 'Todos') data = data.filter(it => it.idSemestre === semFiltro);
+      if (turnoFiltro !== 'Todos') data = data.filter(it => it.turno === turnoFiltro);
+      if (q) {
+        data = data.filter(it =>
+          it.nombre.toLowerCase().includes(q) ||
+          it.codigo.toLowerCase().includes(q) ||
+          it.docente.toLowerCase().includes(q)
+        );
+      }
+
+      const hayFiltro = !!(q || semFiltro !== 'Todos' || turnoFiltro !== 'Todos');
+      if (conteo) {
+        conteo.textContent = base.length === 0 ? ''
+          : hayFiltro ? `${data.length} de ${base.length} materia${base.length === 1 ? '' : 's'} (por turno)`
+          : `${base.length} materia${base.length === 1 ? '' : 's'} en total (contando ambos turnos)`;
+      }
+
+      if (data.length === 0) {
+        contenedor.innerHTML = `<div style="grid-column: 1 / -1; padding: var(--e-8); text-align: center; color: var(--texto-suave);">${base.length === 0 ? 'Cargando estadísticas...' : 'No hay materias que coincidan con esta búsqueda o filtro.'}</div>`;
+        return;
+      }
+
+      let html = "";
+      let semestreMostrado = null;
+
+      data.forEach(it => {
+        if (it.semestreNombre !== semestreMostrado) {
+          html += `<div style="grid-column: 1 / -1; margin-top: 24px; margin-bottom: 8px; border-bottom: 1px solid var(--borde); padding-bottom: 8px;">
+                   <h2 style="font-family: var(--f-display); color: var(--verde-950); font-size: 18px; margin: 0;">${it.semestreNombre}</h2>
+                 </div>`;
+          semestreMostrado = it.semestreNombre;
+        }
+
+        // Color del badge del profesor
+        const colorDocente = it.docente === "Sin Asignar" ? "color: var(--error-texto); font-style: italic;" : "color: var(--verde-700); font-weight: 500;";
+
+        html += `
+        <div class="card" style="display:flex; flex-direction:column; justify-content:space-between; border-radius: var(--radio); box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+              <span class="materia-badge codigo-materia" style="font-size: 11px;">${it.codigo}</span>
+              <span style="font-size: 11px; font-weight: 600; padding: 4px 8px; background: var(--verde-50); color: var(--verde-800); border-radius: 4px;">Turno ${it.turno}</span>
+            </div>
+            <h3 style="margin: 0 0 4px; font-family: var(--f-display); color: var(--verde-950); font-size: 16px; line-height: 1.2;">${it.nombre}</h3>
+            <div style="margin-bottom: 12px; font-size: 12.5px;">
+              <span style="color: var(--texto-suave);">Docente:</span>
+              <span style="${colorDocente}">${it.docente}</span>
+            </div>
+
+            <div style="background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); padding: 10px; margin-bottom: 16px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px;">
+                <span style="color: var(--texto-suave);">Estudiantes inscritos:</span>
+                <strong style="color: var(--texto);">${it.totalEst}</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px;">
+                <span style="color: var(--texto-suave);">Aprobados (>= 61):</span>
+                <strong style="color: var(--verde-700);">${it.aprobados}</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px;">
+                <span style="color: var(--texto-suave);">Reprobados (< 61):</span>
+                <strong style="color: var(--error-texto);">${it.reprobados}</strong>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex; gap: 6px; flex-wrap: wrap;">
+            <button onclick="window.abrirVisorCalificacionesAdmin('${it.codigo}', '${it.nombre}', '${it.turno}', '${it.idSemestre}')" class="btn-secundario" style="flex:1; padding: 6px; font-size: 12px;">Ver Notas</button>
+            <button onclick="window.abrirVisorAsistenciaAdmin('${it.codigo}', '${it.nombre}', '${it.turno}', '${it.idSemestre}')" class="btn-secundario" style="flex:1; padding: 6px; font-size: 12px;">Auditar Asistencia</button>
+          </div>
+        </div>`;
+      });
+
+      contenedor.innerHTML = html;
     };
 
     window.abrirVisorCalificacionesAdmin = async function (codigo, nombre, turno, semestreId) {

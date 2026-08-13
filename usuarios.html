@@ -35,6 +35,97 @@
     a.menu-item { text-decoration: none; }
 
     /* ============================================================
+       Estas clases viven solo en el <style> propio de index.html —
+       03-componentes.css NO las tiene (ver §MEMORIA: dan por hecho
+       que están compartidas y no lo están). Se copian acá tal cual
+       para que esta página se vea igual. Si en algún momento se
+       mueven a 03-componentes.css, este bloque se puede borrar.
+       ============================================================ */
+    .tabla-vacia {
+      text-align: center;
+      color: var(--texto-suave);
+      padding: 40px 20px;
+    }
+    .tabla-vacia .tabla-vacia-icono {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 8px;
+      opacity: .6;
+    }
+    .tabla-vacia .tabla-vacia-icono svg {
+      width: 28px;
+      height: 28px;
+    }
+    .tabla-vacia .tabla-vacia-texto {
+      font-size: 13.5px;
+    }
+
+    .form-card {
+      background: #fff;
+      padding: var(--e-8);
+      border-radius: var(--r-md);
+      border: 1px solid var(--borde);
+      box-shadow: var(--sombra-1);
+      max-width: 800px;
+    }
+
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 16px;
+      margin-top: 24px;
+      border-top: 1px solid var(--borde);
+      padding-top: 24px;
+    }
+
+    .filtro-card {
+      background: #fff;
+      padding: 20px;
+      border-radius: var(--r-md);
+      border: 1px solid var(--borde);
+      margin-bottom: 24px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 35, 26, 0.4);
+      backdrop-filter: blur(2px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-overlay.activo {
+      display: flex;
+      animation: fadeIn 0.2s ease;
+    }
+    .modal-card {
+      background: #fff;
+      border-radius: var(--r-md);
+      padding: var(--e-8);
+      width: 100%;
+      max-width: 460px;
+      box-shadow: var(--sombra-2);
+    }
+
+    @media (max-width: 480px) {
+      .filtro-card { padding: 14px; gap: 10px; }
+      .form-grid-2 { grid-template-columns: 1fr; }
+    }
+
+    /* ============================================================
        RESPONSIVE — mismo patrón de sidebar deslizable que index.html
        y docente.html (ver esos archivos para la versión completa).
        ============================================================ */
@@ -178,6 +269,27 @@
                 <h3>Cuentas existentes</h3>
               </div>
               <div class="form-section-body">
+                <div class="filtro-card" style="margin-bottom: 16px;">
+                  <div style="flex: 1;">
+                    <label for="buscarUsuarioLista" style="font-size: 13px; font-weight: 500; color: var(--tinta-700); display: block; margin-bottom: 6px;">Buscar por nombre o correo</label>
+                    <div class="campo-buscar">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                      <input type="text" id="buscarUsuarioLista" class="select-css" placeholder="Ej. Rosa o rosa@teslavi.edu.bo" oninput="window.renderizarListaUsuarios()">
+                    </div>
+                  </div>
+                  <div style="min-width: 180px;">
+                    <label for="filtroRolLista" style="font-size: 13px; font-weight: 500; color: var(--tinta-700); display: block; margin-bottom: 6px;">Rol</label>
+                    <select id="filtroRolLista" class="select-css" onchange="window.renderizarListaUsuarios()">
+                      <option value="Todos">Todos los roles</option>
+                      <option value="SuperAdmin">Admin Total</option>
+                      <option value="Admin">Admin</option>
+                      <option value="Director">Director</option>
+                      <option value="Secretaria">Secretaria</option>
+                      <option value="Cajero">Cajero</option>
+                    </select>
+                  </div>
+                </div>
+                <div id="usuariosListaConteo" style="font-size: 12.5px; color: var(--texto-suave); margin-bottom: 12px;"></div>
                 <div style="border: 1px solid var(--borde); border-radius: var(--radio); overflow: hidden;">
                   <div class="tabla-scroll-wrap">
                     <table class="materia-table" style="width: 100%; min-width: 620px; margin: 0;">
@@ -227,6 +339,32 @@
           </div>
 
         </main>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: RESTABLECER CONTRASEÑA DE OTRA CUENTA -->
+  <div class="modal-overlay" id="modalPasswordUsuario">
+    <div class="modal-card" style="max-width: 420px;">
+      <h2 style="font-family: var(--f-display); font-size: 22px; color: var(--verde-950); margin: 0 0 4px;">Restablecer Contraseña</h2>
+      <p style="color: var(--texto-suave); font-size: 14px; margin: 0 0 24px;" id="lblUsuarioPassword">Cuenta</p>
+
+      <div class="campo">
+        <label for="usrPassNueva1">Nueva contraseña</label>
+        <input type="password" id="usrPassNueva1" class="select-css" placeholder="Mínimo 6 caracteres">
+      </div>
+      <div class="campo">
+        <label for="usrPassNueva2">Repetir nueva contraseña</label>
+        <input type="password" id="usrPassNueva2" class="select-css">
+      </div>
+      <p style="color:var(--texto-suave); font-size:12.5px; margin: -8px 0 16px;">La persona puede volver a cambiarla ella misma después. Esto no le manda ningún aviso — comunicáselo por tu cuenta.</p>
+
+      <div class="mensaje" id="mensajeModalPasswordUsuario" role="alert" style="margin-bottom: 16px;"></div>
+
+      <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px;">
+        <button type="button" class="btn-secundario" onclick="window.cerrarModalPasswordUsuario()">Cancelar</button>
+        <button type="button" class="btn-ingresar" style="width: auto;" id="btnConfirmarPasswordUsuario"
+          onclick="window.confirmarPasswordUsuario()">Guardar</button>
       </div>
     </div>
   </div>
@@ -355,15 +493,34 @@
 
     window.renderizarListaUsuarios = function () {
       const tbody = document.getElementById('tbodyUsuarios');
-      const lista = window.usuariosCache;
+      const conteo = document.getElementById('usuariosListaConteo');
+      const base = window.usuariosCache || [];
+
+      const q = (document.getElementById('buscarUsuarioLista')?.value || '').toLowerCase().trim();
+      const rolFiltro = document.getElementById('filtroRolLista')?.value || 'Todos';
+
+      let lista = base;
+      if (rolFiltro !== 'Todos') lista = lista.filter(u => u.role === rolFiltro);
+      if (q) lista = lista.filter(u => (u.name || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q));
+
+      const hayFiltro = !!(q || rolFiltro !== 'Todos');
+      if (conteo) {
+        conteo.textContent = base.length === 0 ? ''
+          : hayFiltro ? `${lista.length} de ${base.length} cuenta${base.length === 1 ? '' : 's'}`
+          : `${base.length} cuenta${base.length === 1 ? '' : 's'} registrada${base.length === 1 ? '' : 's'}`;
+      }
+
       if (lista.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="tabla-vacia"><div class="tabla-vacia-texto">No hay usuarios todavía.</div></td></tr>';
+        tbody.innerHTML = base.length === 0
+          ? '<tr><td colspan="5" class="tabla-vacia"><div class="tabla-vacia-texto">No hay usuarios todavía.</div></td></tr>'
+          : '<tr><td colspan="5" class="tabla-vacia"><div class="tabla-vacia-texto">No hay cuentas que coincidan con esta búsqueda o filtro.</div></td></tr>';
         return;
       }
       tbody.innerHTML = lista.map(u => {
         const rolActualEsValido = ROLES_STAFF.includes(u.role);
         const opciones = ROLES_STAFF.map(r => `<option value="${r}" ${u.role === r ? 'selected' : ''}>${NOMBRE_ROL[r]}</option>`).join('');
         const soyYo = u.id === window.usuarioActual?.id;
+        const nombreEsc = (u.name || u.email || '').replace(/'/g, "\\'");
         return `
           <tr>
             <td style="font-weight:600;">${escHtml(u.name || '—')}${soyYo ? ' <span style="font-weight:400; color:var(--texto-suave); font-size:11px;">(vos)</span>' : ''}</td>
@@ -375,8 +532,9 @@
             </td>
             <td style="text-align:center;">${u.activo === false ? '<span class="materia-badge" style="background:var(--error-bg); color:var(--error-texto);">Inactivo</span>' : '<span class="materia-badge" style="background:var(--ok-bg); color:var(--ok-texto);">Activo</span>'}</td>
             <td style="text-align:center; white-space:nowrap;">
-              <button type="button" class="btn-secundario" style="padding:6px 12px; margin:0 4px 0 0;" ${soyYo ? 'disabled' : ''} onclick="window.guardarRolUsuario('${u.id}')">Guardar rol</button>
-              <button type="button" class="btn-secundario" style="padding:6px 12px; margin:0;" ${soyYo ? 'disabled' : ''} onclick="window.alternarActivoUsuario('${u.id}', ${u.activo !== false})">${u.activo === false ? 'Activar' : 'Desactivar'}</button>
+              <button type="button" class="btn-secundario" style="padding:6px 12px; margin:0 4px 4px 0;" ${soyYo ? 'disabled' : ''} onclick="window.guardarRolUsuario('${u.id}')">Guardar rol</button>
+              <button type="button" class="btn-secundario" style="padding:6px 12px; margin:0 4px 4px 0;" onclick="window.abrirModalPasswordUsuario('${u.id}', '${nombreEsc}')">Restablecer contraseña</button>
+              <button type="button" class="btn-secundario" style="padding:6px 12px; margin:0 0 4px 0;" ${soyYo ? 'disabled' : ''} onclick="window.alternarActivoUsuario('${u.id}', ${u.activo !== false})">${u.activo === false ? 'Activar' : 'Desactivar'}</button>
             </td>
           </tr>
         `;
@@ -408,6 +566,73 @@
       if (error) { window.toast('Error: ' + error.message, 'error'); return; }
       window.toast(`Cuenta ${accion === 'desactivar' ? 'desactivada' : 'activada'}.`, 'exito');
       await window.cargarListaUsuarios();
+    };
+
+    // ==========================================
+    // RESTABLECER CONTRASEÑA DE OTRA CUENTA — vía Edge Function
+    // (admin-set-password), la única forma segura de que el SuperAdmin
+    // escriba directo la contraseña de otra persona sin exponer la
+    // clave service_role en el navegador. Ver ese archivo para el
+    // detalle de seguridad.
+    // ==========================================
+    window.usuarioActualPassword = null;
+
+    window.abrirModalPasswordUsuario = function (userId, nombre) {
+      window.usuarioActualPassword = userId;
+      document.getElementById('lblUsuarioPassword').textContent = nombre;
+      document.getElementById('usrPassNueva1').value = '';
+      document.getElementById('usrPassNueva2').value = '';
+      const msg = document.getElementById('mensajeModalPasswordUsuario');
+      msg.className = 'mensaje';
+      msg.style.display = 'none';
+      document.getElementById('modalPasswordUsuario').classList.add('activo');
+    };
+
+    window.cerrarModalPasswordUsuario = function () {
+      document.getElementById('modalPasswordUsuario').classList.remove('activo');
+      window.usuarioActualPassword = null;
+    };
+
+    window.confirmarPasswordUsuario = async function () {
+      const userId = window.usuarioActualPassword;
+      if (!userId) return;
+      const msg = document.getElementById('mensajeModalPasswordUsuario');
+      const btn = document.getElementById('btnConfirmarPasswordUsuario');
+      const p1 = document.getElementById('usrPassNueva1').value;
+      const p2 = document.getElementById('usrPassNueva2').value;
+
+      if (!p1 || p1.length < 6) {
+        msg.className = 'mensaje error visible';
+        msg.textContent = 'La contraseña tiene que tener al menos 6 caracteres.';
+        return;
+      }
+      if (p1 !== p2) {
+        msg.className = 'mensaje error visible';
+        msg.textContent = 'Las dos contraseñas no coinciden.';
+        return;
+      }
+
+      btn.disabled = true;
+      msg.className = 'mensaje visible';
+      msg.style.background = 'var(--fondo)';
+      msg.style.color = 'var(--texto-suave)';
+      msg.textContent = 'Actualizando contraseña...';
+      try {
+        const { data, error } = await supabaseClient.functions.invoke('admin-set-password', {
+          body: { user_id: userId, new_password: p1 }
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+
+        window.cerrarModalPasswordUsuario();
+        window.toast('Contraseña actualizada correctamente.', 'exito');
+      } catch (err) {
+        console.error(err);
+        msg.className = 'mensaje error visible';
+        msg.textContent = 'Error al actualizar: ' + (err.message || 'no se pudo conectar con la función admin-set-password (¿ya la desplegaste en Supabase?).');
+      } finally {
+        btn.disabled = false;
+      }
     };
 
     /* Crear un usuario real de Supabase Auth desde el panel, sin tener
