@@ -1105,7 +1105,7 @@
                 </div>
 
                 <div class="form-actions" style="position:sticky; bottom:0; background:var(--superficie); z-index:5; margin-bottom:0;">
-                  <div class="mensaje" id="mensajeEstudiante" role="alert" style="margin: 0; display: none;"></div>
+                  <div class="mensaje" id="mensajeEstudiante" role="alert" style="margin: 0;"></div>
                   <button type="submit" class="btn-ingresar" id="btnGuardarEstudiante"
                     style="width: auto; padding: 12px 32px; margin: 0;">
                     <span id="txtBtnEstudiante">Guardar Estudiante</span>
@@ -1269,7 +1269,7 @@
                 </div>
 
                 <div class="form-actions">
-                  <div class="mensaje" id="mensajeImportacion" role="alert" style="margin: 0; display: none;"></div>
+                  <div class="mensaje" id="mensajeImportacion" role="alert" style="margin: 0;"></div>
                   <button onclick="procesarArchivoExcel()" class="btn-ingresar" id="btnImportarEstudiantes"
                     style="width: auto; padding: 12px 32px; margin: 0;">
                     <span id="txtBtnImportar">Subir e Importar Alumnos</span>
@@ -1350,7 +1350,7 @@
                     </div>
                   </div>
                   <div class="form-actions">
-                    <div class="mensaje" id="mensajeArrastre" role="alert" style="margin: 0; display: none;"></div>
+                    <div class="mensaje" id="mensajeArrastre" role="alert" style="margin: 0;"></div>
                     <button type="button" onclick="window.guardarArrastres()" class="btn-ingresar" id="btnGuardarArrastre" style="width: auto; padding: 12px 32px; margin: 0;">
                       <span>Guardar Arrastres</span>
                     </button>
@@ -1372,7 +1372,7 @@
                     <input type="text" id="cfgWhatsappConsultas" placeholder="Número sin prefijo de país">
                   </div>
                   <div class="form-actions" style="margin-top: 24px;">
-                    <div class="mensaje" id="msgWhatsappError" role="alert" style="margin: 0; display: none;"></div>
+                    <div class="mensaje" id="msgWhatsappError" role="alert" style="margin: 0;"></div>
                     <div class="mensaje-exito" id="msgWhatsappSuccess" role="alert" style="margin: 0; display: none; background:#D1FAE5; color:#065F46; padding:10px; border-radius:6px; font-size:14px;">¡Número guardado correctamente!</div>
                     <button type="button" onclick="window.guardarWhatsappConsultas()" class="btn-ingresar" id="btnGuardarWhatsapp" style="width: auto; padding: 12px 32px; margin: 0;">
                       <span class="spinner oculto" id="spinnerWhatsapp"></span>
@@ -1471,7 +1471,7 @@
                 </div>
 
                 <div class="form-actions">
-                  <div class="mensaje" id="mensajeDocente" role="alert" style="margin: 0; display: none;"></div>
+                  <div class="mensaje" id="mensajeDocente" role="alert" style="margin: 0;"></div>
                   <button type="submit" class="btn-ingresar" id="btnGuardarDocente"
                     style="width: auto; padding: 12px 32px; margin: 0;">
                     Guardar Docente
@@ -1567,7 +1567,7 @@
                 </div>
                 <div class="form-actions" style="justify-content:flex-start;">
                   <button type="button" class="btn-ingresar" id="btnGuardarConfigTrimestres" style="width:auto; padding:12px 24px; margin:0;" onclick="window.guardarConfigTrimestres('notas')">Guardar Fechas</button>
-                  <div class="mensaje" id="mensajeConfigTrimestres" role="alert" style="margin: 0 0 0 16px; display: none;"></div>
+                  <div class="mensaje" id="mensajeConfigTrimestres" role="alert" style="margin: 0 0 0 16px;"></div>
                 </div>
               </div>
             </div>
@@ -1630,7 +1630,7 @@
                 </div>
                 <div class="form-actions" style="justify-content:flex-start;">
                   <button type="button" class="btn-ingresar" id="matBtnGuardarConfigTrimestres" style="width:auto; padding:12px 24px; margin:0;" onclick="window.guardarConfigTrimestres('materias')">Guardar Fechas</button>
-                  <div class="mensaje" id="matMensajeConfigTrimestres" role="alert" style="margin: 0 0 0 16px; display: none;"></div>
+                  <div class="mensaje" id="matMensajeConfigTrimestres" role="alert" style="margin: 0 0 0 16px;"></div>
                 </div>
               </div>
             </div>
@@ -2237,7 +2237,7 @@
                     <div class="campo"><label for="descRapidoMotivo">¿Por qué el descuento?</label><input type="text" id="descRapidoMotivo" placeholder="Ej. Beca deportiva"></div>
                   </div>
                   <div class="form-actions">
-                    <div class="mensaje" id="mensajeDescRapido" role="alert" style="margin: 0; display: none;"></div>
+                    <div class="mensaje" id="mensajeDescRapido" role="alert" style="margin: 0;"></div>
                     <button type="button" class="btn-ingresar" id="btnAplicarDescRapido" style="width: auto; padding: 12px 32px; margin: 0;" onclick="window.aplicarDescuentoRapido()">Aplicar Descuento</button>
                   </div>
                 </div>
@@ -2261,7 +2261,7 @@
                       <div class="campo" style="grid-column: 1 / -1;"><label for="contDireccion">Dirección</label><input type="text" id="contDireccion"></div>
                     </div>
                     <div class="form-actions">
-                      <div class="mensaje" id="mensajeContactoFinanciero" role="alert" style="margin: 0; display: none;"></div>
+                      <div class="mensaje" id="mensajeContactoFinanciero" role="alert" style="margin: 0;"></div>
                       <button type="submit" class="btn-ingresar" id="btnGuardarContactoFinanciero" style="width: auto; padding: 12px 32px; margin: 0;">Guardar Contacto</button>
                     </div>
                   </form>
@@ -2351,7 +2351,7 @@
                   <div class="form-actions" style="justify-content:flex-start; gap:12px; flex-wrap:wrap;">
                     <button type="button" class="btn-ingresar" id="btnGuardarConfigFinancieraGeneral" style="width:auto; padding:12px 24px; margin:0;" onclick="window.guardarConfigFinancieraGeneral()">Guardar Configuración</button>
                     <button type="button" class="btn-ingresar" style="width:auto; padding:12px 24px; margin:0; background:#1976D2;" onclick="window.generarPlanesPorDefecto()" title="Normalmente no hace falta: es un respaldo por si algún estudiante quedó sin plan.">Rellenar planes faltantes</button>
-                    <div class="mensaje" id="mensajeConfigFinancieraGeneral" role="alert" style="margin: 0; display: none;"></div>
+                    <div class="mensaje" id="mensajeConfigFinancieraGeneral" role="alert" style="margin: 0;"></div>
                   </div>
 
                   <div class="form-section-header" style="margin: 24px 0 16px; border-bottom: 1px solid var(--borde); padding-bottom: 16px;">
@@ -2384,7 +2384,7 @@
                   <div class="form-actions" style="justify-content:flex-start; gap:12px; flex-wrap:wrap;">
                     <button type="button" class="btn-ingresar" id="btnGuardarFechasCuotas" style="width: auto; padding: 12px 32px; margin: 0;" onclick="window.guardarFechasCuotas()">Guardar Fechas de Cuotas</button>
                     <button type="button" class="btn-ingresar" style="width: auto; padding: 12px 24px; margin: 0; background:#1976D2;" onclick="window.resincronizarFechasCuotas()" title="Los estudiantes que ya tenían cuotas generadas ANTES de este cambio se quedaron con la fecha vieja — este botón las actualiza a lo que está guardado arriba.">Actualizar fechas de cuotas existentes</button>
-                    <div class="mensaje" id="mensajeFechasCuotas" role="alert" style="margin: 0; display: none;"></div>
+                    <div class="mensaje" id="mensajeFechasCuotas" role="alert" style="margin: 0;"></div>
                   </div>
 
                   <div class="form-section-header" style="margin: 24px 0 16px; border-bottom: 1px solid var(--borde); padding-bottom: 16px;">
@@ -2393,7 +2393,7 @@
                   </div>
                   <div class="form-actions" style="justify-content:flex-start; gap:12px; flex-wrap:wrap;">
                     <button type="button" class="btn-ingresar" style="width:auto; padding:12px 24px; margin:0; background:#B91C1C;" onclick="window.cerrarGestionActual()">Cerrar gestión actual</button>
-                    <div class="mensaje" id="mensajeCerrarGestion" role="alert" style="margin: 0; display: none;"></div>
+                    <div class="mensaje" id="mensajeCerrarGestion" role="alert" style="margin: 0;"></div>
                   </div>
                 </div>
               </div>
@@ -2432,7 +2432,7 @@
                     </div>
                   </div>
                   <div class="form-actions">
-                    <div class="mensaje" id="mensajeCambioGestion" role="alert" style="margin: 0; display: none;"></div>
+                    <div class="mensaje" id="mensajeCambioGestion" role="alert" style="margin: 0;"></div>
                     <button type="button" class="btn-ingresar" id="btnConfirmarCambioGestion" style="width: auto; padding: 12px 32px; margin: 0; background:#B91C1C;" onclick="window.confirmarCambioGestion()">Confirmar cambio de gestión</button>
                   </div>
                 </div>
@@ -2601,7 +2601,7 @@
                   <button type="button" class="tab-btn" onclick="window.agregarItemGasto()" style="border:1px solid var(--borde); border-radius:var(--radio); padding:6px 14px; margin-top:12px;">+ Agregar ítem</button>
 
                   <div class="form-actions">
-                    <div class="mensaje" id="mensajeGasto" role="alert" style="margin: 0; display: none;"></div>
+                    <div class="mensaje" id="mensajeGasto" role="alert" style="margin: 0;"></div>
                     <button type="button" class="btn-ingresar" id="btnRegistrarGasto" style="width: auto; padding: 12px 32px; margin: 0;" onclick="window.registrarGastoUI()">Registrar Gasto</button>
                   </div>
                 </div>
@@ -2692,7 +2692,7 @@
                   <button type="button" class="tab-btn" onclick="window.agregarItemIngreso()" style="border:1px solid var(--borde); border-radius:var(--radio); padding:6px 14px; margin-top:12px;">+ Agregar ítem</button>
 
                   <div class="form-actions">
-                    <div class="mensaje" id="mensajeIngreso" role="alert" style="margin: 0; display: none;"></div>
+                    <div class="mensaje" id="mensajeIngreso" role="alert" style="margin: 0;"></div>
                     <button type="button" class="btn-ingresar" id="btnRegistrarIngreso" style="width: auto; padding: 12px 32px; margin: 0;" onclick="window.registrarIngresoUI()">Registrar Ingreso</button>
                   </div>
                 </div>
@@ -2906,7 +2906,7 @@
         <textarea id="anularMotivo" class="select-css" style="resize:vertical; min-height:80px;" placeholder="Ej. Cambio de plan, error de cobro..."></textarea>
       </div>
 
-      <div class="mensaje" id="mensajeModalAnularPago" role="alert" style="margin-bottom: 16px; display:none;"></div>
+      <div class="mensaje" id="mensajeModalAnularPago" role="alert" style="margin-bottom: 16px;"></div>
 
       <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px;">
         <button type="button" class="btn-secundario" onclick="window.cerrarModalAnularPago()">Cancelar</button>
@@ -6241,7 +6241,7 @@
             <div class="form-section-header"><h3>No hay caja abierta hoy</h3></div>
             <div class="form-section-body">
               <div class="campo"><label for="cajaMontoApertura">Monto de apertura (Bs.)</label><input type="number" min="0" step="0.01" id="cajaMontoApertura" class="select-css" value="0"></div>
-              <div class="mensaje" id="mensajeCaja" style="display:none;"></div>
+              <div class="mensaje" id="mensajeCaja"></div>
               <button type="button" class="btn-ingresar" style="width:auto; padding:12px 32px;" onclick="window.abrirCajaUI()">Abrir Caja</button>
             </div>
           </div>`;
@@ -6282,7 +6282,7 @@
               <div class="campo"><label for="egresoMonto">Monto (Bs.)</label><input type="number" min="0.01" step="0.01" id="egresoMonto" class="select-css"></div>
             </div>
             <div class="form-actions">
-              <div class="mensaje" id="mensajeEgreso" style="margin:0; display:none;"></div>
+              <div class="mensaje" id="mensajeEgreso" style="margin:0;"></div>
               <button type="button" class="btn-ingresar" style="width:auto; padding:12px 32px; margin:0;" onclick="window.registrarEgresoUI()">Registrar Egreso</button>
             </div>
           </div>
@@ -6290,7 +6290,7 @@
             <div class="form-section-header"><h3>Cerrar Caja</h3></div>
             <div class="form-section-body">
               <div class="campo"><label for="cajaMontoDeclarado">Monto contado en caja (Bs.)</label><input type="number" min="0" step="0.01" id="cajaMontoDeclarado" class="select-css"></div>
-              <div class="mensaje" id="mensajeCierre" style="display:none;"></div>
+              <div class="mensaje" id="mensajeCierre"></div>
               <button type="button" class="btn-ingresar" style="width:auto; padding:12px 32px;" onclick="window.cerrarCajaUI()">Cerrar Caja</button>
             </div>
           </div>`;
