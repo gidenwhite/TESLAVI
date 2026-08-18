@@ -2763,7 +2763,7 @@
                 </div>
             </div>
             <div class="card list-panel" style="padding:0; margin-top:24px; overflow-x: auto;">
-                <table class="materia-table" style="min-width: 800px;">
+                <table class="materia-table" style="min-width: 880px;">
                    <thead>
                       <tr id="tablaAdminAsistenciaHead"></tr>
                    </thead>
@@ -3405,7 +3405,8 @@
       Object.keys(asistObjMateria || {}).forEach(fecha => {
         if (fecha >= fechaInicio && fecha <= fechaFin) {
           total++;
-          if (asistObjMateria[fecha].estado === 'Presente') presentes++; // Falta y Falta Justificada NO suman
+          const estadoDia = asistObjMateria[fecha].estado;
+          if (estadoDia === 'Presente' || estadoDia === 'Atrasado') presentes++; // Atrasado vale igual que Presente. Falta y Falta Justificada NO suman
         }
       });
       return { pts: total > 0 ? Math.round((presentes / total) * 20) : 0, presentes, total };
@@ -8013,7 +8014,8 @@
       htmlHead += '<th style="text-align:center; min-width:80px; background:#146C46; color:#ffffff; font-size:11px;">Total Asist.</th>';
       htmlHead += '<th style="text-align:center; min-width:80px; background:#1B8557; color:#ffffff; font-size:11px;">% Asist.</th>';
       htmlHead += '<th style="text-align:center; min-width:80px; background:#B71C1C; color:#ffffff; font-size:11px;">Faltas</th>';
-      htmlHead += '<th style="text-align:center; min-width:80px; background:#E65100; color:#ffffff; font-size:11px;">Faltas Justif.</th></tr>';
+      htmlHead += '<th style="text-align:center; min-width:80px; background:#E65100; color:#ffffff; font-size:11px;">Faltas Justif.</th>';
+      htmlHead += '<th style="text-align:center; min-width:80px; background:#1976D2; color:#ffffff; font-size:11px;">Atrasos</th></tr>';
       thead.innerHTML = htmlHead;
 
       let htmlBody = "";
@@ -8025,7 +8027,7 @@
         let colorFila = (idx % 2 === 0) ? '#ffffff' : '#f9fbf9';
         htmlBody += `<tr><td style="position:sticky; left:0; background:${colorFila}; color:var(--texto-suave); border-right:1px solid var(--borde); font-size:13px; text-align:center; z-index:1;">${idx + 1}</td><td style="position:sticky; left:40px; background:${colorFila}; font-weight:600; color:var(--verde-950); border-right:1px solid var(--borde); font-size:13px; z-index:1;">${est.apellidos} <span style="font-weight:400">${est.nombres}</span></td>`;
 
-        let p = 0, f = 0, fj = 0;
+        let p = 0, f = 0, fj = 0, at = 0;
         let diasTotalesTomados = fechasArray.length;
 
         fechasArray.forEach(fecha => {
@@ -8035,6 +8037,9 @@
           } else if (reg.estado === 'Presente') {
             p++;
             htmlBody += `<td style="text-align:center; font-weight:bold; color:var(--verde-700);">1<br><span style="font-size:10px; font-weight:normal; color:var(--texto-suave);">${reg.hora || ''}</span></td>`;
+          } else if (reg.estado === 'Atrasado') {
+            p++; at++;
+            htmlBody += `<td style="text-align:center; font-weight:bold; color:#1976D2;" title="Atrasado (cuenta como Presente)">T<br><span style="font-size:10px; font-weight:normal; color:var(--texto-suave);">${reg.hora || ''}</span></td>`;
           } else if (reg.estado === 'Falta') {
             f++;
             htmlBody += `<td style="text-align:center; padding: 4px;">
@@ -8069,7 +8074,8 @@
         htmlBody += `<td style="text-align:center; font-weight:bold; color:var(--verde-800);">${p}</td>`;
         htmlBody += `<td style="text-align:center; font-weight:bold; color:${colorPorcentaje};">${porcentaje}%</td>`;
         htmlBody += `<td style="text-align:center;" ${estiloFaltas}>${f}</td>`;
-        htmlBody += `<td style="text-align:center; font-weight:bold; color:#F57C00;">${fj}</td></tr>`;
+        htmlBody += `<td style="text-align:center; font-weight:bold; color:#F57C00;">${fj}</td>`;
+        htmlBody += `<td style="text-align:center; font-weight:bold; color:#1976D2;">${at}</td></tr>`;
       });
       tbody.innerHTML = htmlBody;
 
@@ -8405,7 +8411,7 @@
                 totalFaltasGlobal++;
               } else if (reg.estado === 'Falta Justificada') {
                 totalFJGlobal++;
-              } else if (reg.estado === 'Presente') {
+              } else if (reg.estado === 'Presente' || reg.estado === 'Atrasado') {
                 totalPresentesGlobal++;
               }
             });
@@ -8922,6 +8928,7 @@
       cols.push({ header: '', key: 'porcentaje_p', width: 12 });
       cols.push({ header: '', key: 'total_f', width: 12 });
       cols.push({ header: '', key: 'total_fj', width: 14 });
+      cols.push({ header: '', key: 'total_at', width: 12 });
       ws.columns = cols;
 
       ws.mergeCells(1, 1, 1, cols.length);
@@ -8951,7 +8958,7 @@
         const partes = f.split('-');
         headerVals.push(partes[2] + '-' + partes[1] + '-' + partes[0]);
       });
-      headerVals.push('Total Asist.', '% Asist.', 'Faltas', 'Faltas Justif.');
+      headerVals.push('Total Asist.', '% Asist.', 'Faltas', 'Faltas Justif.', 'Atrasos');
       headerRow.values = headerVals;
       headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
       headerRow.eachCell(cell => cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF146C46' } });
@@ -8965,19 +8972,20 @@
         const historialMateria = asistObj[codigoMat] || {};
 
         let rowVals = [idx + 1, `${est.apellidos} ${est.nombres}`];
-        let p = 0, f = 0, fj = 0;
+        let p = 0, f = 0, fj = 0, at = 0;
 
         fechasArray.forEach(fecha => {
           const reg = historialMateria[fecha];
           if (!reg) { rowVals.push('-'); }
           else if (reg.estado === 'Presente') { p++; rowVals.push('1'); }
+          else if (reg.estado === 'Atrasado') { p++; at++; rowVals.push('T'); }
           else if (reg.estado === 'Falta') { f++; rowVals.push('0'); }
           else if (reg.estado === 'Falta Justificada') { fj++; rowVals.push(`FJ (${reg.motivo || ''})`); }
           else { rowVals.push('?'); }
         });
 
         let porcentaje = Math.round((p / diasTotalesTomados) * 100) || 0;
-        rowVals.push(p, porcentaje + '%', f, fj);
+        rowVals.push(p, porcentaje + '%', f, fj, at);
 
         ws.getRow(rowIndex).values = rowVals;
         rowIndex++;
@@ -9023,7 +9031,7 @@
         const partes = f.split('-');
         head[0].push(partes[2] + '-' + partes[1] + '-' + partes[0]);
       });
-      head[0].push('T.Asist', '%', 'Faltas', 'FJ');
+      head[0].push('T.Asist', '%', 'Faltas', 'FJ', 'Atr.');
 
       let body = [];
       let diasTotalesTomados = fechasArray.length;
@@ -9034,19 +9042,20 @@
         const historialMateria = asistObj[codigoMat] || {};
 
         let row = [idx + 1, `${est.apellidos} ${est.nombres}`];
-        let p = 0, f = 0, fj = 0;
+        let p = 0, f = 0, fj = 0, at = 0;
 
         fechasArray.forEach(fecha => {
           const reg = historialMateria[fecha];
           if (!reg) { row.push('-'); }
           else if (reg.estado === 'Presente') { p++; row.push('1'); }
+          else if (reg.estado === 'Atrasado') { p++; at++; row.push('T'); }
           else if (reg.estado === 'Falta') { f++; row.push('0'); }
           else if (reg.estado === 'Falta Justificada') { fj++; row.push(`FJ`); }
           else { row.push('?'); }
         });
 
         let porcentaje = Math.round((p / diasTotalesTomados) * 100) || 0;
-        row.push(p, porcentaje + '%', f, fj);
+        row.push(p, porcentaje + '%', f, fj, at);
         body.push(row);
       });
 

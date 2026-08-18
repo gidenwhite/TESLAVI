@@ -784,7 +784,8 @@
       Object.keys(asistObjMateria || {}).forEach(fecha => {
         if (fecha >= fechaInicio && fecha <= fechaFin) {
           total++;
-          if (asistObjMateria[fecha].estado === 'Presente') presentes++; // Falta y Falta Justificada NO suman
+          const estadoDia = asistObjMateria[fecha].estado;
+          if (estadoDia === 'Presente' || estadoDia === 'Atrasado') presentes++; // Atrasado vale igual que Presente. Falta y Falta Justificada NO suman
         }
       });
       return { pts: total > 0 ? Math.round((presentes / total) * 20) : 0, presentes, total };

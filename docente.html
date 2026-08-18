@@ -305,17 +305,17 @@
             <div id="tab-calificar-t1" class="vista-tab activa">
               <div class="card list-panel" style="padding:0;">
                 <div class="tabla-scroll-wrap">
-                <table class="materia-table" style="min-width:760px;">
+                <table class="materia-table" style="min-width:940px;">
                    <thead>
                       <tr>
                          <th style="width:4%">#</th>
-                         <th style="width:20%">Estudiante</th>
-                         <th style="width:14%">Asistencia (20)</th>
-                         <th style="width:12%">Destreza (20)</th>
-                         <th style="width:12%">Investig. (20)</th>
-                         <th style="width:12%">Prácticas (10)</th>
-                         <th style="width:12%">Examen (30)</th>
-                         <th style="width:14%">Subtotal T1</th>
+                         <th style="width:16%">Estudiante</th>
+                         <th style="width:12%">Asistencia (20)</th>
+                         <th style="width:14%">Destreza (20)</th>
+                         <th style="width:14%">Investig. (20)</th>
+                         <th style="width:14%">Prácticas (10)</th>
+                         <th style="width:14%">Examen (30)</th>
+                         <th style="width:12%">Subtotal T1</th>
                       </tr>
                    </thead>
                    <tbody id="tablaT1Body"></tbody>
@@ -327,17 +327,17 @@
             <div id="tab-calificar-t2" class="vista-tab">
               <div class="card list-panel" style="padding:0;">
                 <div class="tabla-scroll-wrap">
-                <table class="materia-table" style="min-width:760px;">
+                <table class="materia-table" style="min-width:940px;">
                    <thead>
                       <tr>
                          <th style="width:4%">#</th>
-                         <th style="width:20%">Estudiante</th>
-                         <th style="width:14%">Asistencia (20)</th>
-                         <th style="width:12%">Destreza (20)</th>
-                         <th style="width:12%">Investig. (20)</th>
-                         <th style="width:12%">Prácticas (10)</th>
-                         <th style="width:12%">Examen (30)</th>
-                         <th style="width:14%">Subtotal T2</th>
+                         <th style="width:16%">Estudiante</th>
+                         <th style="width:12%">Asistencia (20)</th>
+                         <th style="width:14%">Destreza (20)</th>
+                         <th style="width:14%">Investig. (20)</th>
+                         <th style="width:14%">Prácticas (10)</th>
+                         <th style="width:14%">Examen (30)</th>
+                         <th style="width:12%">Subtotal T2</th>
                       </tr>
                    </thead>
                    <tbody id="tablaT2Body"></tbody>
@@ -436,7 +436,7 @@
                 </div>
             </div>
             <div class="card list-panel" style="padding:0; margin-top:24px; overflow-x: auto;">
-                <table class="materia-table" style="min-width: 800px;">
+                <table class="materia-table" style="min-width: 880px;">
                    <thead>
                       <tr id="tablaHistorialHead"></tr>
                    </thead>
@@ -703,9 +703,20 @@
       let calObj = {};
       try { if (est.calificaciones) calObj = typeof est.calificaciones === 'string' ? JSON.parse(est.calificaciones) : est.calificaciones; } catch (e) { }
       const n = calObj[codigo] || {};
+      const crudaOrVacio = v => (v === undefined || v === null || v === '') ? '' : Number(v);
       return {
-        t1: { destreza: Number(n.t1?.destreza) || 0, investigacion: Number(n.t1?.investigacion) || 0, practicas: Number(n.t1?.practicas) || 0, examen: Number(n.t1?.examen) || 0 },
-        t2: { destreza: Number(n.t2?.destreza) || 0, investigacion: Number(n.t2?.investigacion) || 0, practicas: Number(n.t2?.practicas) || 0, examen: Number(n.t2?.examen) || 0 },
+        t1: {
+          destreza: Number(n.t1?.destreza) || 0, destreza_cruda: crudaOrVacio(n.t1?.destreza_cruda),
+          investigacion: Number(n.t1?.investigacion) || 0, investigacion_cruda: crudaOrVacio(n.t1?.investigacion_cruda),
+          practicas: Number(n.t1?.practicas) || 0, practicas_cruda: crudaOrVacio(n.t1?.practicas_cruda),
+          examen: Number(n.t1?.examen) || 0, examen_cruda: crudaOrVacio(n.t1?.examen_cruda)
+        },
+        t2: {
+          destreza: Number(n.t2?.destreza) || 0, destreza_cruda: crudaOrVacio(n.t2?.destreza_cruda),
+          investigacion: Number(n.t2?.investigacion) || 0, investigacion_cruda: crudaOrVacio(n.t2?.investigacion_cruda),
+          practicas: Number(n.t2?.practicas) || 0, practicas_cruda: crudaOrVacio(n.t2?.practicas_cruda),
+          examen: Number(n.t2?.examen) || 0, examen_cruda: crudaOrVacio(n.t2?.examen_cruda)
+        },
         recuperatorio: (n.recuperatorio === undefined) ? null : n.recuperatorio
       };
     }
@@ -720,7 +731,8 @@
       Object.keys(asistObjMateria || {}).forEach(fecha => {
         if (fecha >= fechaInicio && fecha <= fechaFin) {
           total++;
-          if (asistObjMateria[fecha].estado === 'Presente') presentes++; // Falta y Falta Justificada NO suman
+          const estadoDia = asistObjMateria[fecha].estado;
+          if (estadoDia === 'Presente' || estadoDia === 'Atrasado') presentes++; // Atrasado vale igual que Presente. Falta y Falta Justificada NO suman
         }
       });
       return { pts: total > 0 ? Math.round((presentes / total) * 20) : 0, presentes, total };
@@ -894,15 +906,23 @@
         const r = calcularNotaMateria(est, codigo, window.cfgTrimestres);
         const nombreCorto = `${est.apellidos} <span style="font-weight:400;">${est.nombres}</span>`;
 
+        const campoPonderado = (tipoPrefijo, campo, max, crudaVal, ponderadoVal) => `
+          <div style="display:inline-flex; align-items:center; gap:2px;" title="Nota sobre 100 → se pondera automáticamente sobre ${max}">
+             <input type="number" min="0" max="100" class="select-css nota-cruda-input" style="width:42px; text-align:right; padding:4px 3px; font-size:12px;" data-tipo-cruda="${tipoPrefijo}_${campo}" data-max="${max}" value="${crudaVal}" placeholder="0-100" onchange="window.recalcularNotaPonderada(this)" onkeydown="window.manejarTeclaNota(event,this)">
+             <span style="font-size:10px; color:var(--texto-suave);">&rarr;</span>
+             <input type="number" min="0" max="${max}" class="select-css nota-input" style="width:34px; text-align:right; padding:4px 3px; font-size:12px; background:var(--fondo); color:var(--texto-suave);" data-tipo="${tipoPrefijo}_${campo}" value="${ponderadoVal}" readonly tabindex="-1">
+             <span style="font-size:10px; color:var(--texto-suave);">/${max}</span>
+          </div>`;
+
         const filaTrimestre = (n, a, tipoPrefijo, subtotal) => `
           <tr data-id="${est.id}">
              <td style="color:var(--texto-suave);">${index}</td>
              <td style="font-weight:600; color:var(--verde-950); font-size:13.5px;">${nombreCorto}</td>
              <td style="text-align:center; font-size:12.5px; color:var(--texto-suave);" title="${a.presentes} presente(s) de ${a.total} registrado(s) en el rango del trimestre">${a.pts} pts <span style="opacity:.7;">(${a.presentes}/${a.total})</span></td>
-             <td><div style="display:inline-flex; align-items:center; gap:3px;"><input type="number" min="0" max="20" class="select-css nota-input" style="width:52px; text-align:right; padding:4px 6px;" data-tipo="${tipoPrefijo}_destreza" value="${n.destreza}" onchange="window.recalcularFila(this)" onkeydown="window.manejarTeclaNota(event,this)"><span style="font-size:11px; color:var(--texto-suave);">/20</span></div></td>
-             <td><div style="display:inline-flex; align-items:center; gap:3px;"><input type="number" min="0" max="20" class="select-css nota-input" style="width:52px; text-align:right; padding:4px 6px;" data-tipo="${tipoPrefijo}_investigacion" value="${n.investigacion}" onchange="window.recalcularFila(this)" onkeydown="window.manejarTeclaNota(event,this)"><span style="font-size:11px; color:var(--texto-suave);">/20</span></div></td>
-             <td><div style="display:inline-flex; align-items:center; gap:3px;"><input type="number" min="0" max="10" class="select-css nota-input" style="width:52px; text-align:right; padding:4px 6px;" data-tipo="${tipoPrefijo}_practicas" value="${n.practicas}" onchange="window.recalcularFila(this)" onkeydown="window.manejarTeclaNota(event,this)"><span style="font-size:11px; color:var(--texto-suave);">/10</span></div></td>
-             <td><div style="display:inline-flex; align-items:center; gap:3px;"><input type="number" min="0" max="30" class="select-css nota-input" style="width:52px; text-align:right; padding:4px 6px;" data-tipo="${tipoPrefijo}_examen" value="${n.examen}" onchange="window.recalcularFila(this)" onkeydown="window.manejarTeclaNota(event,this)"><span style="font-size:11px; color:var(--texto-suave);">/30</span></div></td>
+             <td>${campoPonderado(tipoPrefijo, 'destreza', 20, n.destreza_cruda, n.destreza)}</td>
+             <td>${campoPonderado(tipoPrefijo, 'investigacion', 20, n.investigacion_cruda, n.investigacion)}</td>
+             <td>${campoPonderado(tipoPrefijo, 'practicas', 10, n.practicas_cruda, n.practicas)}</td>
+             <td>${campoPonderado(tipoPrefijo, 'examen', 30, n.examen_cruda, n.examen)}</td>
              <td class="subtotal-text" style="font-weight:bold;">${fmtNum(subtotal)}</td>
           </tr>`;
 
@@ -964,7 +984,7 @@
       if (!tbody) return;
 
       const filas = Array.from(tbody.querySelectorAll('tr[data-id]'));
-      const inputsFila = Array.from(tr.querySelectorAll('.nota-input, .rec-input'));
+      const inputsFila = Array.from(tr.querySelectorAll('.nota-cruda-input, .rec-input'));
       const colIndex = inputsFila.indexOf(inputEl);
       const filaIndex = filas.indexOf(tr);
       if (colIndex === -1 || filaIndex === -1) return;
@@ -973,7 +993,7 @@
       const delta = event.key === 'ArrowUp' ? -1 : 1;
       const filaDestino = filas[filaIndex + delta];
       if (!filaDestino) return;
-      const destino = Array.from(filaDestino.querySelectorAll('.nota-input, .rec-input'))[colIndex];
+      const destino = Array.from(filaDestino.querySelectorAll('.nota-cruda-input, .rec-input'))[colIndex];
       if (destino) { destino.focus(); destino.select(); }
     };
 
@@ -983,6 +1003,25 @@
       if (val > max) { val = max; input.value = max; }
       if (val < 0) { val = 0; input.value = 0; }
       window.recalcularEstudiantePorId(input.closest('tr').getAttribute('data-id'));
+    };
+
+    /* Nota cruda (sobre 100) -> ponderación automática sobre el máximo del campo
+       (Destreza/Investig. 20, Prácticas 10, Examen 30). Ej: 100/100 -> 20/20, 50/100 -> 10/20. */
+    window.recalcularNotaPonderada = function (inputCruda) {
+      let val = inputCruda.value === '' ? '' : Number(inputCruda.value) || 0;
+      if (val !== '') {
+        if (val > 100) val = 100;
+        if (val < 0) val = 0;
+        inputCruda.value = val;
+      }
+      const max = Number(inputCruda.getAttribute('data-max')) || 0;
+      const tipoCruda = inputCruda.getAttribute('data-tipo-cruda');
+      const tr = inputCruda.closest('tr');
+      const ponderadoInput = tr.querySelector(`[data-tipo="${tipoCruda}"]`);
+      if (!ponderadoInput) return;
+      const ponderado = val === '' ? 0 : Math.round((val / 100) * max * 10) / 10;
+      ponderadoInput.value = ponderado;
+      window.recalcularFila(ponderadoInput);
     };
 
     window.recalcularEstudiantePorId = function (estId) {
@@ -1048,8 +1087,19 @@
         if (!trT1 || !trT2 || !trResumen) return;
 
         const getVal = (tr, tipo) => Number(tr.querySelector(`[data-tipo="${tipo}"]`)?.value) || 0;
-        const t1 = { destreza: getVal(trT1, 't1_destreza'), investigacion: getVal(trT1, 't1_investigacion'), practicas: getVal(trT1, 't1_practicas'), examen: getVal(trT1, 't1_examen') };
-        const t2 = { destreza: getVal(trT2, 't2_destreza'), investigacion: getVal(trT2, 't2_investigacion'), practicas: getVal(trT2, 't2_practicas'), examen: getVal(trT2, 't2_examen') };
+        const getCruda = (tr, tipo) => { const v = tr.querySelector(`[data-tipo-cruda="${tipo}"]`)?.value; return (v === '' || v === undefined) ? '' : Number(v); };
+        const t1 = {
+          destreza: getVal(trT1, 't1_destreza'), destreza_cruda: getCruda(trT1, 't1_destreza'),
+          investigacion: getVal(trT1, 't1_investigacion'), investigacion_cruda: getCruda(trT1, 't1_investigacion'),
+          practicas: getVal(trT1, 't1_practicas'), practicas_cruda: getCruda(trT1, 't1_practicas'),
+          examen: getVal(trT1, 't1_examen'), examen_cruda: getCruda(trT1, 't1_examen')
+        };
+        const t2 = {
+          destreza: getVal(trT2, 't2_destreza'), destreza_cruda: getCruda(trT2, 't2_destreza'),
+          investigacion: getVal(trT2, 't2_investigacion'), investigacion_cruda: getCruda(trT2, 't2_investigacion'),
+          practicas: getVal(trT2, 't2_practicas'), practicas_cruda: getCruda(trT2, 't2_practicas'),
+          examen: getVal(trT2, 't2_examen'), examen_cruda: getCruda(trT2, 't2_examen')
+        };
         const recInput = trResumen.querySelector('.rec-input');
         const recuperatorio = (!recInput.disabled && recInput.value !== '') ? Number(recInput.value) : null;
 
@@ -1285,11 +1335,13 @@
 
         let faltas = 0;
         let justificadas = 0;
+        let atrasos = 0;
 
         Object.keys(historialMateria).forEach(f => {
           const estDate = historialMateria[f];
           if (estDate.estado === 'Falta') faltas++;
           if (estDate.estado === 'Falta Justificada') justificadas++;
+          if (estDate.estado === 'Atrasado') atrasos++;
         });
 
         const reprobadoFaltas = (faltas >= 8);
@@ -1301,7 +1353,7 @@
         else if (faltas >= 5) colorBarra = 'var(--alerta-texto)';
 
         let textoEstado = `
-          <div style="font-size:11px; color:var(--texto-suave); margin-bottom:4px; white-space:nowrap;">Faltas ${faltas}/8 · Justif. ${justificadas}/5</div>
+          <div style="font-size:11px; color:var(--texto-suave); margin-bottom:4px; white-space:nowrap;">Faltas ${faltas}/8 · Justif. ${justificadas}/5${atrasos > 0 ? ` · <span style="color:#1976D2; font-weight:600;">Atrasos ${atrasos}</span>` : ''}</div>
           <div style="height:4px; width:64px; background:var(--superficie-2); border-radius:999px; overflow:hidden;">
             <div style="height:100%; width:${pctFaltas}%; background:${colorBarra}; border-radius:999px; transition:width var(--dur-base) var(--ease-estandar);"></div>
           </div>`;
@@ -1319,11 +1371,13 @@
              <td>
                 <div class="segmentado" role="group" aria-label="Estado de asistencia">
                    <button type="button" class="seg-btn ${registroHoy.estado === 'Presente' ? 'activo' : ''}" data-valor="Presente" onclick="window.marcarEstadoAsistencia(this,'Presente')">P</button>
+                   <button type="button" class="seg-btn ${registroHoy.estado === 'Atrasado' ? 'activo' : ''}" data-valor="Atrasado" title="Atrasado (vale igual que Presente)" onclick="window.marcarEstadoAsistencia(this,'Atrasado')" style="${registroHoy.estado === 'Atrasado' ? 'background:#1976D2; color:#fff; border-color:#1976D2;' : ''}">T</button>
                    <button type="button" class="seg-btn ${registroHoy.estado === 'Falta' ? 'activo' : ''}" data-valor="Falta" onclick="window.marcarEstadoAsistencia(this,'Falta')">F</button>
                    <button type="button" class="seg-btn ${registroHoy.estado === 'Falta Justificada' ? 'activo' : ''}" data-valor="Falta Justificada" ${limiteJustificadas && registroHoy.estado !== 'Falta Justificada' ? 'disabled' : ''} onclick="window.marcarEstadoAsistencia(this,'Falta Justificada')">FJ</button>
                 </div>
                 <select class="asi-estado" style="display:none;">
                    <option value="Presente" ${registroHoy.estado === 'Presente' ? 'selected' : ''}>Presente</option>
+                   <option value="Atrasado" ${registroHoy.estado === 'Atrasado' ? 'selected' : ''}>Atrasado</option>
                    <option value="Falta" ${registroHoy.estado === 'Falta' ? 'selected' : ''}>Falta</option>
                    <option value="Falta Justificada" ${registroHoy.estado === 'Falta Justificada' ? 'selected' : ''}>Falta Justificada</option>
                 </select>
@@ -1731,7 +1785,8 @@
       htmlHead += '<th style="text-align:center; min-width:80px; background:#146C46; color:#ffffff; font-size:11px;">Total Asist.</th>';
       htmlHead += '<th style="text-align:center; min-width:80px; background:#1B8557; color:#ffffff; font-size:11px;">% Asist.</th>';
       htmlHead += '<th style="text-align:center; min-width:80px; background:#B71C1C; color:#ffffff; font-size:11px;">Faltas</th>';
-      htmlHead += '<th style="text-align:center; min-width:80px; background:#E65100; color:#ffffff; font-size:11px;">Faltas Justif.</th></tr>';
+      htmlHead += '<th style="text-align:center; min-width:80px; background:#E65100; color:#ffffff; font-size:11px;">Faltas Justif.</th>';
+      htmlHead += '<th style="text-align:center; min-width:80px; background:#1976D2; color:#ffffff; font-size:11px;">Atrasos</th></tr>';
       thead.innerHTML = htmlHead;
 
       let htmlBody = "";
@@ -1743,7 +1798,7 @@
         let colorFila = (idx % 2 === 0) ? '#ffffff' : '#f9fbf9';
         htmlBody += `<tr><td style="position:sticky; left:0; background:${colorFila}; color:var(--texto-suave); border-right:1px solid var(--borde); font-size:13px; text-align:center; z-index:1;">${idx + 1}</td><td style="position:sticky; left:40px; background:${colorFila}; font-weight:600; color:var(--verde-950); border-right:1px solid var(--borde); font-size:13px; z-index:1;">${est.apellidos} <span style="font-weight:400">${est.nombres}</span></td>`;
 
-        let p = 0, f = 0, fj = 0;
+        let p = 0, f = 0, fj = 0, at = 0;
         let diasTotalesTomados = fechasArray.length;
 
         fechasArray.forEach(fecha => {
@@ -1753,6 +1808,9 @@
           } else if (reg.estado === 'Presente') {
             p++;
             htmlBody += `<td style="text-align:center; font-weight:bold; color:var(--verde-700);">1<br><span style="font-size:10px; font-weight:normal; color:var(--texto-suave);">${reg.hora || ''}</span></td>`;
+          } else if (reg.estado === 'Atrasado') {
+            p++; at++;
+            htmlBody += `<td style="text-align:center; font-weight:bold; color:#1976D2;" title="Atrasado (cuenta como Presente)">T<br><span style="font-size:10px; font-weight:normal; color:var(--texto-suave);">${reg.hora || ''}</span></td>`;
           } else if (reg.estado === 'Falta') {
             f++;
             htmlBody += `<td style="text-align:center; font-weight:bold; color:#D32F2F;">0<br><span style="font-size:10px; font-weight:normal; color:var(--texto-suave);">${reg.hora || ''}</span></td>`;
@@ -1781,7 +1839,8 @@
         htmlBody += `<td style="text-align:center; font-weight:bold; color:var(--verde-800);">${p}</td>`;
         htmlBody += `<td style="text-align:center; font-weight:bold; color:${colorPorcentaje};">${porcentaje}%</td>`;
         htmlBody += `<td style="text-align:center;" ${estiloFaltas}>${f}</td>`;
-        htmlBody += `<td style="text-align:center; font-weight:bold; color:#F57C00;">${fj}</td></tr>`;
+        htmlBody += `<td style="text-align:center; font-weight:bold; color:#F57C00;">${fj}</td>`;
+        htmlBody += `<td style="text-align:center; font-weight:bold; color:#1976D2;">${at}</td></tr>`;
       });
       tbody.innerHTML = htmlBody;
     };
@@ -1942,6 +2001,7 @@
       cols.push({ header: '', key: 'porcentaje_p', width: 12 });
       cols.push({ header: '', key: 'total_f', width: 12 });
       cols.push({ header: '', key: 'total_fj', width: 14 });
+      cols.push({ header: '', key: 'total_at', width: 12 });
       ws.columns = cols;
 
       ws.mergeCells(1, 1, 1, cols.length);
@@ -1971,7 +2031,7 @@
         const partes = f.split('-');
         headerVals.push(partes[2] + '-' + partes[1] + '-' + partes[0]);
       });
-      headerVals.push('Total Asist.', '% Asist.', 'Faltas', 'Faltas Justif.');
+      headerVals.push('Total Asist.', '% Asist.', 'Faltas', 'Faltas Justif.', 'Atrasos');
       headerRow.values = headerVals;
       headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
       headerRow.eachCell(cell => cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF146C46' } });
@@ -1985,19 +2045,20 @@
         const historialMateria = asistObj[codigoMat] || {};
 
         let rowVals = [idx + 1, `${est.apellidos} ${est.nombres}`];
-        let p = 0, f = 0, fj = 0;
+        let p = 0, f = 0, fj = 0, at = 0;
 
         fechasArray.forEach(fecha => {
           const reg = historialMateria[fecha];
           if (!reg) { rowVals.push('-'); }
           else if (reg.estado === 'Presente') { p++; rowVals.push('1'); }
+          else if (reg.estado === 'Atrasado') { p++; at++; rowVals.push('T'); }
           else if (reg.estado === 'Falta') { f++; rowVals.push('0'); }
           else if (reg.estado === 'Falta Justificada') { fj++; rowVals.push(`FJ (${reg.motivo || ''})`); }
           else { rowVals.push('?'); }
         });
 
         let porcentaje = Math.round((p / diasTotalesTomados) * 100) || 0;
-        rowVals.push(p, porcentaje + '%', f, fj);
+        rowVals.push(p, porcentaje + '%', f, fj, at);
 
         ws.getRow(rowIndex).values = rowVals;
         rowIndex++;
@@ -2052,7 +2113,7 @@
         const partes = f.split('-');
         head[0].push(partes[2] + '-' + partes[1] + '-' + partes[0]);
       });
-      head[0].push('T.Asist', '%', 'Faltas', 'FJ');
+      head[0].push('T.Asist', '%', 'Faltas', 'FJ', 'Atr.');
 
       let body = [];
       let diasTotalesTomados = fechasArray.length;
@@ -2063,19 +2124,20 @@
         const historialMateria = asistObj[codigoMat] || {};
 
         let row = [idx + 1, `${est.apellidos} ${est.nombres}`];
-        let p = 0, f = 0, fj = 0;
+        let p = 0, f = 0, fj = 0, at = 0;
 
         fechasArray.forEach(fecha => {
           const reg = historialMateria[fecha];
           if (!reg) { row.push('-'); }
           else if (reg.estado === 'Presente') { p++; row.push('1'); }
+          else if (reg.estado === 'Atrasado') { p++; at++; row.push('T'); }
           else if (reg.estado === 'Falta') { f++; row.push('0'); }
           else if (reg.estado === 'Falta Justificada') { fj++; row.push(`FJ`); }
           else { row.push('?'); }
         });
 
         let porcentaje = Math.round((p / diasTotalesTomados) * 100) || 0;
-        row.push(p, porcentaje + '%', f, fj);
+        row.push(p, porcentaje + '%', f, fj, at);
         body.push(row);
       });
 
